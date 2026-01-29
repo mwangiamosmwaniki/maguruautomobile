@@ -13,8 +13,8 @@ export default function Home() {
   return (
     <div className="min-h-screen">
       <HeroSection onSearch={handleSearch} />
-      <FeaturesSection />
       <FeaturedCars />
+      <FeaturesSection />
       <TestimonialsSection />
       <CTASection />
     </div>
