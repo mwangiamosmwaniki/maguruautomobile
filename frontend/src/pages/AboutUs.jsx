@@ -1,4 +1,4 @@
-import React from "react";
+import { useEffect, React } from "react";
 import {
   Car,
   Shield,
@@ -61,6 +61,52 @@ export default function AboutUs() {
     "Extended warranties",
   ];
 
+  //SEO Optimization
+  useEffect(() => {
+    // Page title
+    document.title =
+      "Maguru Automobile | Trusted Car Dealers in Nairobi, Kenya";
+
+    // Meta description
+    const description = document.querySelector('meta[name="description"]');
+    if (description) {
+      description.setAttribute(
+        "content",
+        "Learn about Maguru Automobile — a trusted car dealership in Nairobi offering verified, quality-checked vehicles with transparent pricing and premium customer service.",
+      );
+    } else {
+      const meta = document.createElement("meta");
+      meta.name = "description";
+      meta.content =
+        "Learn about Maguru Automobile — a trusted car dealership in Nairobi offering verified, quality-checked vehicles with transparent pricing and premium customer service.";
+      document.head.appendChild(meta);
+    }
+
+    // Keywords (optional)
+    const keywords = document.querySelector('meta[name="keywords"]');
+    if (keywords) {
+      keywords.setAttribute(
+        "content",
+        "Maguru Automobile, car dealership Nairobi, buy cars Kenya, verified cars Nairobi",
+      );
+    } else {
+      const meta = document.createElement("meta");
+      meta.name = "keywords";
+      meta.content =
+        "Maguru Automobile, car dealership Nairobi, buy cars Kenya, verified cars Nairobi";
+      document.head.appendChild(meta);
+    }
+
+    // Canonical URL
+    let canonical = document.querySelector("link[rel='canonical']");
+    if (!canonical) {
+      canonical = document.createElement("link");
+      canonical.rel = "canonical";
+      document.head.appendChild(canonical);
+    }
+    canonical.href = "https://maguruautomobile.co.ke/about";
+  }, []);
+
   return (
     <div className="bg-black text-slate-200 relative overflow-hidden">
       <div className="fixed inset-0 pointer-events-none">
@@ -70,7 +116,7 @@ export default function AboutUs() {
 
       <section className="relative py-28 text-center max-w-7xl mx-auto px-6">
         <span className="inline-flex items-center gap-2 px-4 py-2 mb-6 rounded-full border border-white/10 bg-white/5 text-orange-500 text-sm">
-          <Sparkles size={16} /> Kenya’s Premium Auto Marketplace
+          <Sparkles size={16} /> Premium Auto Marketplace
         </span>
 
         <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight text-slate-100 mb-8">
