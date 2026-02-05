@@ -1,78 +1,114 @@
-import React from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import Layout from "./Layout";
+import React, { useEffect } from "react";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  useLocation,
+} from "react-router-dom";
 
-// Import your pages
+import Layout from "./Layout";
 import Home from "./pages/Home";
 import Cars from "./pages/Cars";
 import CarDetails from "./pages/CarDetails";
-import SellCar from "./pages/SellCar";
 import AboutUs from "./pages/AboutUs";
+import SellCar from "./pages/SellCar";
+import AdminLogin from "./pages/AdminLogin";
+import MaguruAutoDashboard from "./pages/admin/dashboard";
+import { AuthProvider } from "./lib/AuthContext";
+import { ProtectedRoute, PublicRoute } from "./lib/ProtectedRoute";
+
+function useScrollToTop() {
+  const { pathname } = useLocation();
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [pathname]);
+}
+
+function AppRoutes() {
+  useScrollToTop();
+
+  return (
+    <Routes>
+      <Route
+        path="/"
+        element={
+          <Layout currentPageName="Home">
+            <Home />
+          </Layout>
+        }
+      />
+
+      <Route
+        path="/cars"
+        element={
+          <Layout currentPageName="Cars">
+            <Cars />
+          </Layout>
+        }
+      />
+
+      <Route
+        path="/cars/:id"
+        element={
+          <Layout currentPageName="Cars">
+            <CarDetails />
+          </Layout>
+        }
+      />
+
+      <Route
+        path="/about"
+        element={
+          <Layout currentPageName="AboutUs">
+            <AboutUs />
+          </Layout>
+        }
+      />
+
+      {/* Admin Routes */}
+      <Route
+        path="/admin/login"
+        element={
+          <PublicRoute>
+            <AdminLogin />
+          </PublicRoute>
+        }
+      />
+      <Route
+        path="/admin/dashboard"
+        element={
+          <ProtectedRoute>
+            <MaguruAutoDashboard />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin"
+        element={
+          <ProtectedRoute>
+            <MaguruAutoDashboard />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="*"
+        element={
+          <Layout currentPageName="">
+            <div className="p-10 text-xl text-center">Page Not Found</div>
+          </Layout>
+        }
+      />
+    </Routes>
+  );
+}
 
 export default function App() {
   return (
-    <Router>
-      <Routes>
-        {/* Home Page */}
-        <Route
-          path="/"
-          element={
-            <Layout currentPageName="Home">
-              <Home />
-            </Layout>
-          }
-        />
-
-        {/* Cars Listing */}
-        <Route
-          path="/cars"
-          element={
-            <Layout currentPageName="Cars">
-              <Cars />
-            </Layout>
-          }
-        />
-
-        {/* Car Details (dynamic route with :id) */}
-        <Route
-          path="/cars/:id"
-          element={
-            <Layout currentPageName="Cars">
-              <CarDetails />
-            </Layout>
-          }
-        />
-
-        {/* About Us */}
-        <Route
-          path="/about"
-          element={
-            <Layout currentPageName="AboutUs">
-              <AboutUs />
-            </Layout>
-          }
-        />
-
-        {/* Sell Your Car */}
-        {/* <Route
-          path="/sellcar"
-          element={
-            <Layout currentPageName="SellCar">
-              <SellCar />
-            </Layout>
-          }
-        /> */}
-
-        {/* Fallback route */}
-        <Route
-          path="*"
-          element={
-            <Layout currentPageName="">
-              <div className="p-10 text-center text-xl">Page Not Found</div>
-            </Layout>
-          }
-        />
-      </Routes>
-    </Router>
+    <AuthProvider>
+      <Router>
+        <AppRoutes />
+      </Router>
+    </AuthProvider>
   );
 }

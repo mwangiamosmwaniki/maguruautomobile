@@ -12,6 +12,7 @@ import {
   Sparkles,
   ArrowRight,
 } from "lucide-react";
+import { motion } from "framer-motion";
 
 export default function AboutUs() {
   const values = [
@@ -20,28 +21,28 @@ export default function AboutUs() {
       title: "Quality Assurance",
       description:
         "Every vehicle is rigorously inspected to guarantee reliability and peace of mind.",
-      gradient: "from-blue-400 to-cyan-400",
+      gradient: "from-rose-500 to-orange-500",
     },
     {
       icon: Heart,
       title: "Customer First",
       description:
         "Your satisfaction drives every decision we make, from browsing to delivery.",
-      gradient: "from-pink-400 to-rose-400",
+      gradient: "from-orange-500 to-rose-500",
     },
     {
       icon: TrendingUp,
       title: "Transparency",
       description:
         "Clear pricing, honest assessments, and zero hidden charges — always.",
-      gradient: "from-emerald-400 to-teal-400",
+      gradient: "from-rose-400 to-orange-400",
     },
     {
       icon: Award,
       title: "Excellence",
       description:
         "We deliver premium service and unmatched attention to detail.",
-      gradient: "from-amber-400 to-orange-400",
+      gradient: "from-orange-400 to-rose-400",
     },
   ];
 
@@ -108,145 +109,227 @@ export default function AboutUs() {
   }, []);
 
   return (
-    <div className="bg-black text-slate-200 relative overflow-hidden">
-      <div className="fixed inset-0 pointer-events-none">
-        <div className="absolute -top-40 -left-40 w-[500px] h-[500px] bg-orange-600/10 rounded-full blur-[160px]" />
-        <div className="absolute bottom-0 -right-40 w-[500px] h-[500px] bg-orange-600/10 rounded-full blur-[160px]" />
-      </div>
+    <div className="relative min-h-screen overflow-hidden bg-black">
+      {/* Background Effects */}
+      <div className="absolute inset-0 bg-black" />
 
-      <section className="relative py-28 text-center max-w-7xl mx-auto px-6">
-        <span className="inline-flex items-center gap-2 px-4 py-2 mb-6 rounded-full border border-white/10 bg-white/5 text-orange-500 text-sm">
-          <Sparkles size={16} /> Premium Auto Marketplace
-        </span>
+      {/* Animated Gradient Orbs */}
+      <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-gradient-radial from-rose-500/20 via-orange-500/10 to-transparent rounded-full blur-3xl transform translate-x-1/3 -translate-y-1/2 animate-pulse opacity-60" />
+      <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-gradient-radial from-orange-500/15 via-rose-500/10 to-transparent rounded-full blur-3xl transform -translate-x-1/3 translate-y-1/2 animate-pulse opacity-50" />
+      <div className="absolute top-1/2 left-1/2 w-[400px] h-[400px] bg-gradient-radial from-amber-500/10 to-transparent rounded-full blur-2xl transform -translate-x-1/2 -translate-y-1/2 animate-pulse opacity-40" />
 
-        <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight text-slate-100 mb-8">
-          About{" "}
-          <span className="bg-gradient-to-r from-orange-400 to-orange-600 bg-clip-text text-transparent">
-            Maguru Automobile
+      {/* Noise Texture Overlay */}
+      <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMDAiIGhlaWdodD0iMzAwIj48ZmlsdGVyIGlkPSJhIiB4PSIwIiB5PSIwIj48ZmVUdXJidWxlbmNlIGJhc2VGcmVxdWVuY3k9Ii43NSIgc3RpdGNoVGlsZXM9InN0aXRjaCIgdHlwZT0iZnJhY3RhbE5vaXNlIi8+PGZlQ29sb3JNYXRyaXggdHlwZT0ic2F0dXJhdGUiIHZhbHVlcz0iMCIvPjwvZmlsdGVyPjxyZWN0IHdpZHRoPSIzMDAiIGhlaWdodD0iMzAwIiBmaWx0ZXI9InVybCgjYSkiIG9wYWNpdHk9IjAuMDUiLz48L3N2Zz4=')] opacity-30" />
+
+      {/* Hero Section */}
+      <section className="relative px-6 py-20 mx-auto text-center max-w-7xl md:py-28">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.7 }}
+        >
+          <span className="inline-flex items-center gap-2 px-4 py-2 mb-6 text-sm font-medium border rounded-full bg-gradient-to-r from-rose-500/10 to-orange-500/10 border-rose-500/20 backdrop-blur-sm">
+            <Sparkles size={16} className="text-rose-400" />
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-rose-400 to-orange-400">
+              Premium Auto Marketplace
+            </span>
           </span>
-        </h1>
 
-        <p className="text-slate-400 max-w-3xl mx-auto text-lg md:text-xl leading-relaxed mb-12">
-          We connect drivers with premium, quality-checked vehicles through a
-          transparent, seamless and modern car buying experience.
-        </p>
+          <h1 className="mb-6 text-4xl font-extrabold tracking-tight text-white md:text-6xl lg:text-7xl">
+            About{" "}
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-rose-400 to-orange-400">
+              Maguru Automobile
+            </span>
+          </h1>
 
-        <div className="flex justify-center gap-4 flex-wrap">
-          <a
-            href="#story"
-            className="px-8 py-4 bg-gradient-to-r from-orange-700 to-orange-500 hover:from-orange-500 hover:to-orange-700 rounded-xl font-semibold shadow-lg shadow-blue-500/30 transition-all hover:scale-105"
-          >
-            Our Story
-          </a>
-          <a
-            href="#values"
-            className="px-8 py-4 bg-white/5 border border-white/10 rounded-xl font-semibold hover:bg-white/10 transition"
-          >
-            Our Values
-          </a>
-        </div>
+          <p className="max-w-3xl mx-auto mb-10 text-base leading-relaxed text-gray-400 md:text-lg">
+            We connect drivers with premium, quality-checked vehicles through a
+            transparent, seamless and modern car buying experience.
+          </p>
+
+          <div className="flex flex-wrap justify-center gap-4">
+            <a
+              href="#story"
+              className="px-8 py-4 text-base font-semibold transition-all duration-300 shadow-lg bg-gradient-to-r from-rose-500 to-orange-500 hover:from-rose-600 hover:to-orange-600 rounded-2xl shadow-rose-500/25 hover:shadow-rose-500/40 hover:scale-105"
+            >
+              Our Story
+            </a>
+            <a
+              href="#values"
+              className="px-8 py-4 text-base font-semibold text-gray-300 transition-all duration-300 border border-gray-700 bg-black/50 rounded-2xl hover:bg-gray-800/50 hover:text-white hover:border-gray-600"
+            >
+              Our Values
+            </a>
+          </div>
+        </motion.div>
       </section>
 
-      <section className="max-w-7xl mx-auto px-6 py-20 grid grid-cols-2 md:grid-cols-4 gap-8 border-y border-white/5">
+      {/* Stats Section */}
+      <section className="relative grid grid-cols-2 gap-6 px-6 py-16 mx-auto max-w-7xl md:grid-cols-4 border-y border-gray-800/50 bg-black/30 backdrop-blur-sm">
         {stats.map((stat, i) => (
-          <div key={i} className="text-center">
-            <stat.icon className="w-8 h-8 text-blue-400 mx-auto mb-3" />
-            <div className="text-4xl font-bold text-slate-100">
+          <motion.div
+            key={i}
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: i * 0.1 }}
+            className="text-center"
+          >
+            <div className="relative inline-flex items-center justify-center w-12 h-12 mx-auto mb-3 border rounded-xl bg-black/50 border-gray-800/50">
+              <div className="absolute inset-0 bg-gradient-to-r from-rose-500/20 to-orange-500/20 rounded-xl blur-lg" />
+              <stat.icon className="relative w-6 h-6 text-rose-400" />
+            </div>
+            <div className="mb-1 text-3xl font-bold text-transparent md:text-4xl bg-clip-text bg-gradient-to-r from-white to-gray-300">
               {stat.number}
             </div>
-            <p className="text-slate-500 mt-1">{stat.label}</p>
-          </div>
+            <p className="text-sm text-gray-500">{stat.label}</p>
+          </motion.div>
         ))}
       </section>
 
+      {/* Story Section */}
       <section
         id="story"
-        className="max-w-7xl mx-auto px-6 py-28 grid md:grid-cols-2 gap-16 items-center"
+        className="relative grid items-center gap-12 px-6 py-20 mx-auto max-w-7xl md:py-28 md:grid-cols-2"
       >
-        <div>
-          <h2 className="text-4xl md:text-5xl font-bold text-slate-100 mb-6">
+        <motion.div
+          initial={{ opacity: 0, x: -20 }}
+          whileInView={{ opacity: 1, x: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6 }}
+        >
+          <h2 className="mb-6 text-3xl font-bold text-white md:text-4xl lg:text-5xl">
             Built on Trust. Driven by Quality.
           </h2>
-          <p className="text-slate-400 text-lg leading-relaxed mb-6">
+          <p className="mb-6 text-base leading-relaxed text-gray-400 md:text-lg">
             Maguru Automobile was founded to simplify and modernize the car
             buying process in Kenya. We eliminate hidden costs, unclear
             histories, and unreliable sourcing.
           </p>
-          <p className="text-slate-400 text-lg leading-relaxed">
+          <p className="text-base leading-relaxed text-gray-400 md:text-lg">
             Today, we proudly serve thousands of customers with verified
             vehicles, premium service, and total transparency.
           </p>
-        </div>
+        </motion.div>
 
-        <div className="relative bg-white/[0.04] border border-white/[0.08] rounded-3xl p-16 backdrop-blur-xl shadow-[0_0_60px_rgba(0,0,0,0.7)] flex justify-center">
-          <Car className="w-40 h-40 text-blue-400" />
-        </div>
+        <motion.div
+          initial={{ opacity: 0, x: 20 }}
+          whileInView={{ opacity: 1, x: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6 }}
+          className="relative flex justify-center p-16 border rounded-3xl bg-black/50 border-gray-800/50 backdrop-blur-xl"
+        >
+          <div className="absolute inset-0 bg-gradient-to-br from-rose-500/10 to-orange-500/10 rounded-3xl blur-2xl" />
+          <Car className="relative w-32 h-32 text-rose-400 md:w-40 md:h-40" />
+        </motion.div>
       </section>
 
-      <section id="values" className="max-w-7xl mx-auto px-6 py-28">
-        <div className="text-center mb-16">
-          <h2 className="text-4xl md:text-5xl font-bold text-slate-100 mb-4">
+      {/* Values Section */}
+      <section
+        id="values"
+        className="relative px-6 py-20 mx-auto max-w-7xl md:py-28"
+      >
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="mb-12 text-center"
+        >
+          <h2 className="mb-4 text-3xl font-bold text-white md:text-4xl lg:text-5xl">
             Our Core Values
           </h2>
-          <p className="text-slate-500 text-lg">
+          <p className="text-base text-gray-500 md:text-lg">
             The principles behind every vehicle we deliver
           </p>
-        </div>
+        </motion.div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
           {values.map((value, i) => (
-            <div
+            <motion.div
               key={i}
-              className="bg-white/[0.04] border border-white/[0.08] rounded-3xl p-8 backdrop-blur-xl shadow-[0_0_40px_rgba(0,0,0,0.6)] hover:-translate-y-2 transition"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: i * 0.1 }}
+              className="p-8 transition-all duration-300 border rounded-3xl bg-black/50 border-gray-800/50 backdrop-blur-xl hover:-translate-y-2 hover:border-gray-700/50 group"
             >
               <div
-                className={`w-14 h-14 rounded-xl bg-gradient-to-br ${value.gradient} opacity-70 flex items-center justify-center mb-6`}
+                className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${value.gradient} flex items-center justify-center mb-6 shadow-lg group-hover:scale-110 transition-transform duration-300`}
               >
-                <value.icon className="w-7 h-7 text-white" />
+                <value.icon className="text-white w-7 h-7" />
               </div>
-              <h3 className="text-xl font-semibold text-slate-100 mb-3">
+              <h3 className="mb-3 text-xl font-semibold text-white">
                 {value.title}
               </h3>
-              <p className="text-slate-500">{value.description}</p>
-            </div>
+              <p className="text-sm leading-relaxed text-gray-400 md:text-base">
+                {value.description}
+              </p>
+            </motion.div>
           ))}
         </div>
       </section>
 
-      <section className="max-w-7xl mx-auto px-6 py-28 grid md:grid-cols-2 gap-16 items-center">
-        <div className="relative bg-white/[0.04] border border-white/[0.08] rounded-3xl p-16 backdrop-blur-xl shadow-[0_0_60px_rgba(0,0,0,0.7)] flex justify-center">
-          <Users className="w-40 h-40 text-orange-400" />
-        </div>
+      {/* Features Section */}
+      <section className="relative grid items-center gap-12 px-6 py-20 mx-auto max-w-7xl md:py-28 md:grid-cols-2">
+        <motion.div
+          initial={{ opacity: 0, x: -20 }}
+          whileInView={{ opacity: 1, x: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6 }}
+          className="relative flex justify-center order-2 p-16 border rounded-3xl bg-black/50 border-gray-800/50 backdrop-blur-xl md:order-1"
+        >
+          <div className="absolute inset-0 bg-gradient-to-br from-orange-500/10 to-rose-500/10 rounded-3xl blur-2xl" />
+          <Users className="relative w-32 h-32 text-orange-400 md:w-40 md:h-40" />
+        </motion.div>
 
-        <div>
-          <h2 className="text-4xl md:text-5xl font-bold text-slate-100 mb-6">
+        <motion.div
+          initial={{ opacity: 0, x: 20 }}
+          whileInView={{ opacity: 1, x: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6 }}
+          className="order-1 md:order-2"
+        >
+          <h2 className="mb-6 text-3xl font-bold text-white md:text-4xl lg:text-5xl">
             Everything You Need, In One Place
           </h2>
-          <p className="text-slate-400 text-lg mb-8">
+          <p className="mb-8 text-base text-gray-400 md:text-lg">
             We handle every step so you enjoy a smooth, worry-free purchase.
           </p>
           <ul className="space-y-4">
             {features.map((feature, i) => (
-              <li key={i} className="flex items-center gap-3 text-slate-400">
-                <CheckCircle className="text-emerald-400 w-5 h-5" />
-                {feature}
-              </li>
+              <motion.li
+                key={i}
+                initial={{ opacity: 0, x: -10 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.1 }}
+                className="flex items-center gap-3 text-gray-300"
+              >
+                <CheckCircle className="w-5 h-5 text-rose-400" />
+                <span className="text-sm md:text-base">{feature}</span>
+              </motion.li>
             ))}
           </ul>
-        </div>
+        </motion.div>
       </section>
 
-      <section className="max-w-7xl mx-auto px-6 py-28">
-        <div className="text-center mb-16">
-          <h2 className="text-4xl md:text-5xl font-bold text-slate-100 mb-4">
+      {/* Showroom Section */}
+      <section className="relative px-6 py-20 mx-auto max-w-7xl md:py-28">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="mb-12 text-center"
+        >
+          <h2 className="mb-4 text-3xl font-bold text-white md:text-4xl lg:text-5xl">
             Visit Our Showroom
           </h2>
-          <p className="text-slate-500 text-lg">
+          <p className="text-base text-gray-500 md:text-lg">
             Experience our collection in person
           </p>
-        </div>
+        </motion.div>
 
-        <div className="grid md:grid-cols-3 gap-8">
+        <div className="grid gap-6 md:grid-cols-3">
           {[
             { icon: MapPin, title: "Location", text: "Nairobi, Kenya" },
             {
@@ -260,43 +343,57 @@ export default function AboutUs() {
               text: "Available by appointment",
             },
           ].map((item, i) => (
-            <div
+            <motion.div
               key={i}
-              className="bg-white/[0.04] border border-white/[0.08] rounded-3xl p-8 backdrop-blur-xl shadow-[0_0_40px_rgba(0,0,0,0.6)] text-center"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: i * 0.1 }}
+              className="p-8 text-center transition-all duration-300 border rounded-3xl bg-black/50 border-gray-800/50 backdrop-blur-xl hover:-translate-y-2 hover:border-gray-700/50"
             >
-              <item.icon className="w-10 h-10 text-blue-400 mx-auto mb-4" />
-              <h3 className="text-xl font-semibold text-slate-100 mb-2">
+              <div className="relative inline-flex items-center justify-center w-12 h-12 mx-auto mb-4 border rounded-xl bg-black/50 border-gray-800/50">
+                <div className="absolute inset-0 bg-gradient-to-r from-rose-500/20 to-orange-500/20 rounded-xl blur-lg" />
+                <item.icon className="relative w-6 h-6 text-rose-400" />
+              </div>
+              <h3 className="mb-2 text-lg font-semibold text-white md:text-xl">
                 {item.title}
               </h3>
-              <p className="text-slate-500">{item.text}</p>
-            </div>
+              <p className="text-sm text-gray-400 md:text-base">{item.text}</p>
+            </motion.div>
           ))}
         </div>
       </section>
 
-      <section className="max-w-4xl mx-auto px-6 py-28 text-center">
-        <div className="bg-white/[0.04] border border-white/[0.08] rounded-3xl p-14 backdrop-blur-xl shadow-[0_0_60px_rgba(0,0,0,0.7)]">
-          <h2 className="text-4xl md:text-5xl font-bold text-slate-100 mb-6">
+      {/* CTA Section */}
+      <section className="relative max-w-4xl px-6 py-20 mx-auto text-center md:py-28">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="p-12 border rounded-3xl bg-black/50 border-gray-800/50 backdrop-blur-xl md:p-14"
+        >
+          <div className="absolute inset-0 bg-gradient-to-br from-rose-500/5 to-orange-500/5 rounded-3xl" />
+          <h2 className="relative mb-6 text-3xl font-bold text-white md:text-4xl lg:text-5xl">
             Ready to Drive Your Dream Car?
           </h2>
-          <p className="text-slate-400 text-lg mb-10">
+          <p className="relative max-w-2xl mx-auto mb-10 text-base text-gray-400 md:text-lg">
             Explore our verified vehicles or get personalized assistance today.
           </p>
-          <div className="flex justify-center gap-4 flex-wrap">
+          <div className="relative flex flex-wrap justify-center gap-4">
             <a
               href="/cars"
-              className="px-10 py-4 bg-gradient-to-r from-orange-700 to-orange-500 hover:from-orange-500 hover:to-orange-700 rounded-xl font-semibold shadow-lg shadow-blue-500/30 transition hover:scale-105 flex items-center gap-2"
+              className="inline-flex items-center gap-2 px-10 py-4 text-base font-semibold transition-all duration-300 shadow-lg bg-gradient-to-r from-rose-500 to-orange-500 hover:from-rose-600 hover:to-orange-600 rounded-2xl shadow-rose-500/25 hover:shadow-rose-500/40 hover:scale-105"
             >
               Browse Cars <ArrowRight size={18} />
             </a>
             <a
               href="tel:+254713328988"
-              className="px-10 py-4 bg-white/5 border border-white/10 rounded-xl font-semibold hover:bg-white/10 transition"
+              className="px-10 py-4 text-base font-semibold text-gray-300 transition-all duration-300 border border-gray-700 bg-black/50 rounded-2xl hover:bg-gray-800/50 hover:text-white hover:border-gray-600"
             >
               Contact Us
             </a>
           </div>
-        </div>
+        </motion.div>
       </section>
     </div>
   );

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { ArrowRight, Loader2 } from "lucide-react";
 import { Button } from "../ui/button";
 import { motion } from "framer-motion";
@@ -6,68 +6,54 @@ import { Link } from "react-router-dom";
 import { createPageUrl } from "../../../lib/utils";
 import CarCard from "./CarCard";
 
-// Example static cars data
-const mockCars = [
-  {
-    id: 1,
-    title: "Toyota Corolla 2020",
-    price: 1500000,
-    image_url:
-      "https://images.unsplash.com/photo-1610447508136-03d1c376c2a5?auto=format&fit=crop&w=800&q=80",
-    status: "Available",
-  },
-  {
-    id: 2,
-    title: "Mercedes C200 2019",
-    price: 3500000,
-    image_url:
-      "https://images.unsplash.com/photo-1608889177324-97d5f7f46e5c?auto=format&fit=crop&w=800&q=80",
-    status: "Available",
-  },
-  {
-    id: 3,
-    title: "BMW 320i 2021",
-    price: 4000000,
-    image_url:
-      "https://images.unsplash.com/photo-1611078480721-cd2de9c4b2d3?auto=format&fit=crop&w=800&q=80",
-    status: "Available",
-  },
-  {
-    id: 4,
-    title: "Honda Civic 2018",
-    price: 1300000,
-    image_url:
-      "https://images.unsplash.com/photo-1602524818982-82e43f244ca1?auto=format&fit=crop&w=800&q=80",
-    status: "Available",
-  },
-];
+export default function FeaturedCars() {
+  const [cars, setCars] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-export default function FeaturedCars({ cars = mockCars, isLoading = false }) {
+  useEffect(() => {
+    const fetchFeaturedCars = async () => {
+      try {
+        const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
+        const response = await fetch(`${API_URL}/api/cars`);
+        if (!response.ok) throw new Error("Failed to fetch cars");
+        const data = await response.json();
+        // Display only the first 4 cars as featured
+        setCars(data.slice(0, 4));
+      } catch (error) {
+        console.error("Error fetching featured cars:", error);
+        setCars([]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchFeaturedCars();
+  }, []);
   return (
     <section className="py-20 bg-slate-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="px-4 mx-auto max-w-7xl sm:px-6 lg:px-8">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.5 }}
-          className="flex flex-col md:flex-row md:items-end md:justify-between mb-12"
+          className="flex flex-col mb-12 md:flex-row md:items-end md:justify-between"
         >
           <div>
             <span className="inline-block px-4 py-1.5 bg-rose-100 text-rose-600 rounded-full text-sm font-medium mb-4">
               Featured Listings
             </span>
-            <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4">
+            <h2 className="mb-4 text-3xl font-bold md:text-4xl text-slate-900">
               Explore Our Top Picks
             </h2>
-            <p className="text-lg text-slate-600 max-w-xl">
+            <p className="max-w-xl text-lg text-slate-600">
               Handpicked vehicles that offer exceptional value and quality.
             </p>
           </div>
           <Link to={createPageUrl("Cars")} className="mt-6 md:mt-0">
-            <Button variant="outline" className="rounded-xl group text-black">
+            <Button variant="outline" className="text-black rounded-xl group">
               View All Cars
-              <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
+              <ArrowRight className="w-4 h-4 ml-2 transition-transform group-hover:translate-x-1" />
             </Button>
           </Link>
         </motion.div>
@@ -77,13 +63,13 @@ export default function FeaturedCars({ cars = mockCars, isLoading = false }) {
             <Loader2 className="w-8 h-8 animate-spin text-rose-500" />
           </div>
         ) : cars.length === 0 ? (
-          <div className="text-center py-20">
-            <p className="text-slate-500 text-lg">
+          <div className="py-20 text-center">
+            <p className="text-lg text-slate-500">
               No cars available yet. Check back soon!
             </p>
           </div>
         ) : (
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
             {cars.map((car, index) => (
               <CarCard key={car.id} car={car} index={index} />
             ))}
