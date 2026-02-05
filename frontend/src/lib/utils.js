@@ -10,7 +10,7 @@ export function createPageUrl(pageName) {
     case "SellCar":
       return "/sellcar";
     case "CarDetails":
-      return "/car-details";
+      return "/cars";
     case "AboutUs":
       return "/about";
     default:

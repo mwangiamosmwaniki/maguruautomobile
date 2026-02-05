@@ -25,7 +25,7 @@ export default function CarCard({ car, index = 0 }) {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, delay: index * 0.05 }}
     >
-      <Link to={createPageUrl(`CarDetails?id=${car.id}`)}>
+      <Link to={`/cars/${car.id}`}>
         <div className="group bg-white rounded-2xl overflow-hidden border border-slate-100 hover:border-rose-200 hover:shadow-xl hover:shadow-rose-100/50 transition-all duration-300">
           {/* Image Container */}
           <div className="relative aspect-[4/3] overflow-hidden bg-slate-100">
@@ -40,6 +40,21 @@ export default function CarCard({ car, index = 0 }) {
 
             {/* Badges */}
             <div className="absolute top-3 left-3 flex flex-wrap gap-2">
+              {car.status && (
+                <Badge
+                  className={`border-0 text-xs font-semibold ${
+                    car.status === "Available"
+                      ? "bg-green-500 text-white"
+                      : car.status === "Sold"
+                        ? "bg-red-500 text-white"
+                        : car.status === "Reserved"
+                          ? "bg-yellow-500 text-white"
+                          : "bg-gray-500 text-white"
+                  }`}
+                >
+                  {car.status}
+                </Badge>
+              )}
               {car.financing_available && (
                 <Badge className="bg-emerald-500 text-white border-0 text-xs">
                   Financing Available

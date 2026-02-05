@@ -3,6 +3,7 @@ import { FaWhatsapp } from "react-icons/fa";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "./lib/utils";
 import { motion } from "framer-motion";
+import Logo from "./assets/images/maguruLogo.png";
 import {
   Menu,
   X,
@@ -29,12 +30,12 @@ export default function Layout({ children, currentPageName }) {
   ];
 
   return (
-    <div className="min-h-screen flex flex-col bg-black text-slate-200">
+    <div className="flex flex-col min-h-screen bg-black text-slate-200">
       <Toaster position="top-center" richColors />
 
       {/* Top Bar */}
-      <div className="bg-slate-800 text-white py-2 hidden md:block border-b border-slate-800">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between text-sm">
+      <div className="hidden py-2 text-white border-b bg-slate-800 md:block border-slate-800">
+        <div className="flex items-center justify-between px-4 mx-auto text-sm max-w-7xl sm:px-6 lg:px-8">
           <p className="flex items-center gap-2 text-slate-400">
             <Car className="w-4 h-4 text-rose-400" />
             Quality inspected vehicles with smooth transfers
@@ -59,24 +60,27 @@ export default function Layout({ children, currentPageName }) {
       </div>
 
       {/* Header */}
-      <header className="bg-black border-b border-slate-800 sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <header className="sticky top-0 z-50 bg-black border-b border-slate-800">
+        <div className="px-4 mx-auto max-w-7xl sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16 md:h-20">
             {/* Logo */}
             <Link
               to={createPageUrl("Home")}
               className="flex items-center gap-2"
             >
-              <div className="w-10 h-10 bg-gradient-to-br from-rose-500 to-orange-500 rounded-xl flex items-center justify-center">
-                <Car className="w-6 h-6 text-white" />
-              </div>
-              <span className="text-xl font-bold text-white">
+              <img
+                src={Logo}
+                alt="Maguru Automobile Logo"
+                className="object-contain rounded-lg w-18 h-14"
+              />
+
+              {/* <span className="text-xl font-bold text-white">
                 Maguru Automobile
-              </span>
+              </span> */}
             </Link>
 
             {/* Desktop Navigation */}
-            <nav className="hidden md:flex items-center gap-8">
+            <nav className="items-center hidden gap-8 md:flex">
               {navigation.map((item) => (
                 <Link
                   key={item.name}
@@ -93,7 +97,7 @@ export default function Layout({ children, currentPageName }) {
             </nav>
 
             {/* CTA Button */}
-            <div className="hidden md:flex items-center gap-4">
+            <div className="items-center hidden gap-4 md:flex">
               <Link to={createPageUrl("Cars")}>
                 <Button className="bg-gradient-to-r from-rose-500 to-orange-500 hover:from-rose-600 hover:to-orange-600 rounded-xl">
                   Browse Cars
@@ -103,7 +107,7 @@ export default function Layout({ children, currentPageName }) {
 
             {/* Mobile Menu Button */}
             <button
-              className="md:hidden p-2 text-slate-400 hover:text-white"
+              className="p-2 md:hidden text-slate-400 hover:text-white"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             >
               {mobileMenuOpen ? (
@@ -117,7 +121,7 @@ export default function Layout({ children, currentPageName }) {
 
         {/* Mobile Menu */}
         {mobileMenuOpen && (
-          <div className="md:hidden border-t border-slate-800 bg-slate-900">
+          <div className="border-t md:hidden border-slate-800 bg-slate-900">
             <div className="px-4 py-4 space-y-2">
               {navigation.map((item) => (
                 <Link
@@ -149,46 +153,52 @@ export default function Layout({ children, currentPageName }) {
       <main className="flex-1">{children}</main>
 
       {/* Footer */}
-      <footer className="bg-black text-white border-t border-slate-800">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 lg:gap-12">
+      <footer className="text-white bg-black border-t border-slate-800">
+        <div className="px-4 py-16 mx-auto max-w-7xl sm:px-6 lg:px-8">
+          <div className="grid grid-cols-2 gap-8 md:grid-cols-4 lg:gap-12">
             {/* Brand */}
             <div className="col-span-2 md:col-span-1">
               <Link
                 to={createPageUrl("Home")}
                 className="flex items-center gap-2 mb-6"
               >
-                <div className="w-10 h-10 bg-gradient-to-br from-rose-500 to-orange-500 rounded-xl flex items-center justify-center">
-                  <Car className="w-6 h-6 text-white" />
+                <div className="flex items-center justify-center overflow-hidden rounded-lg w-18 h-14">
+                  <img
+                    src={Logo}
+                    alt="Maguru Logo"
+                    className="object-contain w-full h-full"
+                  />
                 </div>
-                <span className="text-xl font-bold">Maguru Automobile</span>
+
+                {/* <span className="text-xl font-bold">Maguru Automobile</span> */}
               </Link>
-              <p className="text-slate-400 text-sm leading-relaxed mb-6">
+
+              <p className="mb-6 text-sm leading-relaxed text-slate-400">
                 Kenya's trusted car marketplace. Quality inspected vehicles with
                 easy financing and smooth transfers.
               </p>
               <div className="flex items-center gap-4">
                 <a
                   href="#"
-                  className="w-9 h-9 bg-slate-900 rounded-lg flex items-center justify-center hover:bg-rose-500 transition-colors"
+                  className="flex items-center justify-center transition-colors rounded-lg w-9 h-9 bg-slate-900 hover:bg-rose-500"
                 >
                   <Facebook className="w-4 h-4" />
                 </a>
                 <a
                   href="#"
-                  className="w-9 h-9 bg-slate-900 rounded-lg flex items-center justify-center hover:bg-rose-500 transition-colors"
+                  className="flex items-center justify-center transition-colors rounded-lg w-9 h-9 bg-slate-900 hover:bg-rose-500"
                 >
                   <Twitter className="w-4 h-4" />
                 </a>
                 <a
                   href="#"
-                  className="w-9 h-9 bg-slate-900 rounded-lg flex items-center justify-center hover:bg-rose-500 transition-colors"
+                  className="flex items-center justify-center transition-colors rounded-lg w-9 h-9 bg-slate-900 hover:bg-rose-500"
                 >
                   <Instagram className="w-4 h-4" />
                 </a>
                 <a
                   href="#"
-                  className="w-9 h-9 bg-slate-900 rounded-lg flex items-center justify-center hover:bg-rose-500 transition-colors"
+                  className="flex items-center justify-center transition-colors rounded-lg w-9 h-9 bg-slate-900 hover:bg-rose-500"
                 >
                   <Youtube className="w-4 h-4" />
                 </a>
@@ -197,12 +207,12 @@ export default function Layout({ children, currentPageName }) {
 
             {/* Quick Links */}
             <div>
-              <h4 className="font-semibold mb-4 text-white">Quick Links</h4>
+              <h4 className="mb-4 font-semibold text-white">Quick Links</h4>
               <ul className="space-y-3">
                 <li>
                   <Link
                     to={createPageUrl("Home")}
-                    className="text-slate-400 hover:text-white transition-colors text-sm"
+                    className="text-sm transition-colors text-slate-400 hover:text-white"
                   >
                     Home
                   </Link>
@@ -210,7 +220,7 @@ export default function Layout({ children, currentPageName }) {
                 <li>
                   <Link
                     to={createPageUrl("Cars")}
-                    className="text-slate-400 hover:text-white transition-colors text-sm"
+                    className="text-sm transition-colors text-slate-400 hover:text-white"
                   >
                     Buy a Car
                   </Link>
@@ -218,7 +228,7 @@ export default function Layout({ children, currentPageName }) {
                 {/* <li>
                   <Link
                     to={createPageUrl("SellCar")}
-                    className="text-slate-400 hover:text-white transition-colors text-sm"
+                    className="text-sm transition-colors text-slate-400 hover:text-white"
                   >
                     Sell Your Car
                   </Link>
@@ -228,12 +238,12 @@ export default function Layout({ children, currentPageName }) {
 
             {/* Services */}
             <div>
-              <h4 className="font-semibold mb-4 text-white">Services</h4>
+              <h4 className="mb-4 font-semibold text-white">Services</h4>
               <ul className="space-y-3">
                 <li>
                   <a
                     href="#"
-                    className="text-slate-400 hover:text-white transition-colors text-sm"
+                    className="text-sm transition-colors text-slate-400 hover:text-white"
                   >
                     Car Financing
                   </a>
@@ -241,7 +251,7 @@ export default function Layout({ children, currentPageName }) {
                 <li>
                   <a
                     href="#"
-                    className="text-slate-400 hover:text-white transition-colors text-sm"
+                    className="text-sm transition-colors text-slate-400 hover:text-white"
                   >
                     Car Inspection
                   </a>
@@ -249,7 +259,7 @@ export default function Layout({ children, currentPageName }) {
                 <li>
                   <a
                     href="#"
-                    className="text-slate-400 hover:text-white transition-colors text-sm"
+                    className="text-sm transition-colors text-slate-400 hover:text-white"
                   >
                     Car Insurance
                   </a>
@@ -257,7 +267,7 @@ export default function Layout({ children, currentPageName }) {
                 <li>
                   <a
                     href="#"
-                    className="text-slate-400 hover:text-white transition-colors text-sm"
+                    className="text-sm transition-colors text-slate-400 hover:text-white"
                   >
                     Car Valuation
                   </a>
@@ -267,17 +277,17 @@ export default function Layout({ children, currentPageName }) {
 
             {/* Contact */}
             <div>
-              <h4 className="font-semibold mb-4 text-white">Contact</h4>
+              <h4 className="mb-4 font-semibold text-white">Contact</h4>
               <ul className="space-y-3">
-                <li className="flex items-center gap-2 text-slate-400 text-sm">
+                <li className="flex items-center gap-2 text-sm text-slate-400">
                   <Phone className="w-4 h-4" />
                   +254 713 328988
                 </li>
-                <li className="flex items-center gap-2 text-slate-400 text-sm">
+                <li className="flex items-center gap-2 text-sm text-slate-400">
                   <Mail className="w-4 h-4" />
                   isaackimani6@gmail.com
                 </li>
-                <li className="flex items-start gap-2 text-slate-400 text-sm">
+                <li className="flex items-start gap-2 text-sm text-slate-400">
                   <MapPin className="w-4 h-4 mt-0.5" />
                   Nairobi, Kenya
                 </li>
@@ -285,21 +295,21 @@ export default function Layout({ children, currentPageName }) {
             </div>
           </div>
 
-          <div className="border-t border-slate-800 mt-12 pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
-            <p className="text-slate-400 text-sm">
+          <div className="flex flex-col items-center justify-between gap-4 pt-8 mt-12 border-t border-slate-800 md:flex-row">
+            <p className="text-sm text-slate-400">
               © {new Date().getFullYear()} Maguru Automobile. All rights
               reserved.
             </p>
             <div className="flex items-center gap-6 text-sm">
               <a
                 href="#"
-                className="text-slate-400 hover:text-white transition-colors"
+                className="transition-colors text-slate-400 hover:text-white"
               >
                 Privacy Policy
               </a>
               <a
                 href="#"
-                className="text-slate-400 hover:text-white transition-colors"
+                className="transition-colors text-slate-400 hover:text-white"
               >
                 Terms of Service
               </a>
@@ -310,7 +320,7 @@ export default function Layout({ children, currentPageName }) {
           href="https://wa.me/254713328988"
           target="_blank"
           rel="noopener noreferrer"
-          className="fixed bottom-6 right-6 w-14 h-14 bg-green-500 rounded-full shadow-lg flex items-center justify-center hover:bg-green-600 transition-colors z-50"
+          className="fixed z-50 flex items-center justify-center transition-colors bg-green-500 rounded-full shadow-lg bottom-6 right-6 w-14 h-14 hover:bg-green-600"
           animate={{
             scale: [1, 1.15, 1],
             opacity: [1, 0.8, 1],
