@@ -78,11 +78,44 @@ export default function CarDetails() {
     fetchCar();
   }, [carId]);
 
-  const handleInquirySubmit = (e) => {
+  const handleInquirySubmit = async (e) => {
     e.preventDefault();
-    toast.success("Inquiry sent successfully! We will contact you soon.");
-    setDialogOpen(false);
-    setInquiry({ name: "", email: "", phone: "", message: "" });
+
+    // Validate required fields
+    if (!inquiry.name || !inquiry.email || !inquiry.phone || !inquiry.message) {
+      toast.error("Please fill in all fields");
+      return;
+    }
+
+    try {
+      const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
+      const response = await fetch(`${API_URL}/api/enquiries`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: inquiry.name,
+          email: inquiry.email,
+          phone: inquiry.phone,
+          message: inquiry.message,
+          car_id: carId || null,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        toast.success("Inquiry sent successfully! We will contact you soon.");
+        setDialogOpen(false);
+        setInquiry({ name: "", email: "", phone: "", message: "" });
+      } else {
+        toast.error(data.message || "Failed to send inquiry");
+      }
+    } catch (error) {
+      console.error("Error submitting inquiry:", error);
+      toast.error("Failed to send inquiry. Please try again.");
+    }
   };
 
   const formatPrice = (price) => {

@@ -35,6 +35,8 @@ export default function CarCard({ car, index = 0 }) {
                 "https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=600&q=80"
               }
               alt={car.title}
+              loading="lazy"
+              decoding="async"
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
             />
 
