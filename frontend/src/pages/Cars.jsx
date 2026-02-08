@@ -25,7 +25,6 @@ export default function Cars() {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 12;
 
-  // Allowed conditions to display
   const allowedConditions = ["Foreign Used", "Locally Used"];
 
   // Fetch cars data
