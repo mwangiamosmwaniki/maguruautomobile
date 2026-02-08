@@ -82,8 +82,14 @@ export default function HeroSection({ onSearch }) {
   const [priceRange, setPriceRange] = useState("");
   const [currentSlide, setCurrentSlide] = useState(0);
 
-  // Auto slide effect
+  // Preload carousel images and auto slide effect
   useEffect(() => {
+    // Preload all carousel images for smooth transitions
+    heroSlides.forEach((slide) => {
+      const img = new Image();
+      img.src = slide.image;
+    });
+
     const timer = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % heroSlides.length);
     }, 6000);
@@ -146,6 +152,8 @@ export default function HeroSection({ onSearch }) {
                   <img
                     src={heroSlides[currentSlide].image}
                     alt={heroSlides[currentSlide].subtitle}
+                    loading="lazy"
+                    decoding="async"
                     className="relative object-cover w-full h-full border shadow-2xl rounded-2xl border-gray-800/50"
                   />
 
