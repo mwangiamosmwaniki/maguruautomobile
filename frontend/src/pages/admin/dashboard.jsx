@@ -42,7 +42,7 @@ const BODY_TYPES = [
   "Van",
   "Minivan",
 ];
-const CONDITIONS = ["New", "Like New", "Good", "Fair", "Needs Work"];
+const CONDITIONS = ["Foreign Used", "Locally Used"];
 const STATUSES = ["Available", "Sold", "Reserved", "On Hold"];
 const COLORS = [
   "Black",
@@ -81,6 +81,11 @@ const Icon = ({ name, size = 18 }) => {
     arrow: "M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z",
     dollar:
       "M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z",
+    menu: "M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z",
+    trendUp:
+      "M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6z",
+    trendDown:
+      "M16 18l2.29-2.29-4.88-4.88-4 4L2 7.41 3.41 6l6 6 4-4 6.3 6.29L22 12v6z",
   };
   return (
     <svg
@@ -122,7 +127,10 @@ const css = `
     position: fixed;
     top: 0; left: 0; bottom: 0;
     z-index: 100;
+    transition: transform 0.3s ease;
+    transform: translateX(0);
   }
+  
   .mgr-logo {
     padding: 28px 24px 24px;
     border-bottom: 1px solid #1e2128;
@@ -157,14 +165,59 @@ const css = `
     font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 10px;
   }
 
+  /* ── Mobile Menu Button ── */
+  .mgr-mobile-menu-btn {
+    display: none;
+    position: fixed;
+    top: 16px;
+    left: 16px;
+    z-index: 101;
+    background: #111318;
+    border: 1px solid #1e2128;
+    border-radius: 8px;
+    padding: 8px;
+    cursor: pointer;
+    color: #e2e4e8;
+  }
+  
+  .mgr-overlay-mobile {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 99;
+  }
+  
+  .mgr-overlay-mobile.show {
+    display: block;
+  }
+
   /* ── Main ── */
-  .mgr-main { margin-left: 230px; flex: 1; padding: 28px 32px; min-height: 100vh; }
+  .mgr-main { 
+    margin-left: 230px; 
+    flex: 1; 
+    padding: 28px 32px; 
+    min-height: 100vh;
+    width: calc(100% - 230px);
+  }
 
   /* ── Header ── */
-  .mgr-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 28px; }
-  .mgr-header-left h1 { font-family: 'Bebas Neue', sans-serif; font-size: 28px; letter-spacing: 2px; color: #fff; }
+  .mgr-header { 
+    display: flex; 
+    align-items: center; 
+    justify-content: space-between; 
+    margin-bottom: 28px;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+  .mgr-header-left h1 { 
+    font-family: 'Bebas Neue', sans-serif; 
+    font-size: 28px; 
+    letter-spacing: 2px; 
+    color: #fff; 
+  }
   .mgr-header-left p { color: #555; font-size: 13px; margin-top: 2px; }
-  .mgr-header-right { display: flex; gap: 12px; align-items: center; }
+  .mgr-header-right { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
 
   /* ── Buttons ── */
   .btn {
@@ -182,8 +235,19 @@ const css = `
   .btn-sm { padding: 6px 12px; font-size: 12px; }
 
   /* ── Search / Filter Bar ── */
-  .mgr-toolbar { display: flex; gap: 12px; align-items: center; margin-bottom: 20px; flex-wrap: wrap; }
-  .mgr-search-wrap { position: relative; flex: 1; min-width: 200px; max-width: 340px; }
+  .mgr-toolbar { 
+    display: flex; 
+    gap: 12px; 
+    align-items: center; 
+    margin-bottom: 20px; 
+    flex-wrap: wrap; 
+  }
+  .mgr-search-wrap { 
+    position: relative; 
+    flex: 1; 
+    min-width: 200px; 
+    max-width: 340px; 
+  }
   .mgr-search-wrap svg { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #555; }
   .mgr-search {
     width: 100%; padding: 9px 14px 9px 38px;
@@ -206,7 +270,12 @@ const css = `
   .mgr-select option { background: #111318; }
 
   /* ── Stats Cards ── */
-  .mgr-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
+  .mgr-stats { 
+    display: grid; 
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); 
+    gap: 16px; 
+    margin-bottom: 24px; 
+  }
   .mgr-stat-card {
     background: #111318; border: 1px solid #1e2128; border-radius: 12px;
     padding: 20px; position: relative; overflow: hidden; transition: border .25s;
@@ -234,8 +303,9 @@ const css = `
   .mgr-table-wrap {
     background: #111318; border: 1px solid #1e2128; border-radius: 12px;
     overflow: hidden;
+    overflow-x: auto;
   }
-  .mgr-table { width: 100%; border-collapse: collapse; }
+  .mgr-table { width: 100%; border-collapse: collapse; min-width: 800px; }
   .mgr-table thead { border-bottom: 1px solid #1e2128; }
   .mgr-table th {
     padding: 13px 16px; text-align: left; color: #555; font-size: 11px;
@@ -285,10 +355,14 @@ const css = `
     position: fixed; inset: 0; background: rgba(0,0,0,.6);
     z-index: 200; display: flex; align-items: center; justify-content: center;
     backdrop-filter: blur(3px);
+    padding: 20px;
   }
   .mgr-modal {
     background: #141720; border: 1px solid #1e2128; border-radius: 14px;
-    width: 560px; max-height: 90vh; overflow-y: auto;
+    width: 100%;
+    max-width: 560px; 
+    max-height: 90vh; 
+    overflow-y: auto;
     box-shadow: 0 20px 60px rgba(0,0,0,.5);
     animation: modalIn .25s ease;
   }
@@ -332,21 +406,38 @@ const css = `
   .mgr-modal-footer {
     display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px;
     padding-top: 18px; border-top: 1px solid #1e2128;
+    flex-wrap: wrap;
   }
 
   /* ── Detail View ── */
-  .mgr-detail-hero { display: flex; gap: 28px; margin-bottom: 24px; }
+  .mgr-detail-hero { 
+    display: flex; 
+    gap: 28px; 
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+  }
   .mgr-detail-img {
-    width: 300px; height: 200px; border-radius: 14px; background: #141720;
-    border: 1px solid #1e2128; display: flex; align-items: center;
-    justify-content: center; color: #444; overflow: hidden; flex-shrink: 0;
+    width: 300px; 
+    height: 200px; 
+    border-radius: 14px; 
+    background: #141720;
+    border: 1px solid #1e2128; 
+    display: flex; 
+    align-items: center;
+    justify-content: center; 
+    color: #444; 
+    overflow: hidden; 
+    flex-shrink: 0;
   }
   .mgr-detail-img img { width: 100%; height: 100%; object-fit: cover; }
-  .mgr-detail-info { flex: 1; display: flex; flex-direction: column; justify-content: center; }
+  .mgr-detail-info { flex: 1; display: flex; flex-direction: column; justify-content: center; min-width: 250px; }
   .mgr-detail-info h1 { font-family: 'Bebas Neue', sans-serif; font-size: 30px; letter-spacing: 1px; color: #fff; }
   .mgr-detail-info .mgr-detail-price { font-size: 22px; font-weight: 700; color: #e8a317; margin-top: 4px; }
   .mgr-detail-specs {
-    display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-top: 20px;
+    display: grid; 
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); 
+    gap: 14px; 
+    margin-top: 20px;
   }
   .mgr-spec-card {
     background: #141720; border: 1px solid #1e2128; border-radius: 10px; padding: 14px;
@@ -371,6 +462,200 @@ const css = `
   .mgr-confirm-icon { width: 48px; height: 48px; border-radius: 50%; background: rgba(232,93,93,.1); display: flex; align-items: center; justify-content: center; color: #e85d5d; margin: 0 auto 16px; }
   .mgr-confirm-title { color: #fff; font-size: 17px; font-weight: 600; text-align: center; }
   .mgr-confirm-desc { color: #666; font-size: 13px; text-align: center; margin-top: 6px; }
+
+  /* ── Analytics Charts ── */
+  .analytics-container {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+
+  .chart-card {
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    padding: 24px;
+  }
+
+  .chart-header {
+    margin-bottom: 20px;
+  }
+
+  .chart-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: #fff;
+    margin-bottom: 4px;
+  }
+
+  .chart-subtitle {
+    font-size: 13px;
+    color: #666;
+  }
+
+  .metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+
+  .metric-card {
+    padding: 20px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, rgba(249, 115, 22, 0.1) 100%);
+    border: 1px solid rgba(239, 68, 68, 0.2);
+  }
+
+  .metric-label {
+    font-size: 12px;
+    color: #999;
+    margin-bottom: 8px;
+  }
+
+  .metric-value {
+    font-size: 24px;
+    font-weight: bold;
+    color: #fff;
+  }
+
+  .metric-change {
+    font-size: 12px;
+    color: #666;
+    margin-top: 8px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .metric-change.positive {
+    color: #5dcc8e;
+  }
+
+  .metric-change.negative {
+    color: #e85d5d;
+  }
+
+  /* ── Responsive Design ── */
+  @media (max-width: 1024px) {
+    .mgr-stats {
+      grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .mgr-detail-specs {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (max-width: 768px) {
+    .mgr-sidebar {
+      width: 260px;
+      transform: translateX(-100%);
+    }
+    
+    .mgr-sidebar.mobile-open {
+      transform: translateX(0);
+    }
+    
+    .mgr-mobile-menu-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .mgr-main {
+      margin-left: 0;
+      width: 100%;
+      padding: 72px 20px 20px;
+    }
+    
+    .mgr-header {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+    
+    .mgr-header-right {
+      width: 100%;
+      justify-content: flex-start;
+    }
+    
+    .mgr-stats {
+      grid-template-columns: 1fr;
+    }
+    
+    .mgr-toolbar {
+      flex-direction: column;
+      align-items: stretch;
+    }
+    
+    .mgr-search-wrap {
+      max-width: 100%;
+    }
+    
+    .mgr-select {
+      width: 100%;
+    }
+    
+    .mgr-form-grid {
+      grid-template-columns: 1fr;
+    }
+    
+    .mgr-detail-hero {
+      flex-direction: column;
+    }
+    
+    .mgr-detail-img {
+      width: 100%;
+    }
+    
+    .mgr-detail-specs {
+      grid-template-columns: 1fr;
+    }
+    
+    .mgr-table {
+      font-size: 12px;
+    }
+    
+    .mgr-table th,
+    .mgr-table td {
+      padding: 10px 8px;
+    }
+    
+    .metrics-grid {
+      grid-template-columns: 1fr;
+    }
+    
+    .mgr-toast {
+      left: 20px;
+      right: 20px;
+      bottom: 20px;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .mgr-main {
+      padding: 72px 16px 16px;
+    }
+    
+    .mgr-header-left h1 {
+      font-size: 24px;
+    }
+    
+    .btn {
+      padding: 8px 14px;
+      font-size: 12px;
+    }
+    
+    .mgr-stat-value {
+      font-size: 24px;
+    }
+    
+    .mgr-modal {
+      margin: 0;
+      border-radius: 0;
+      max-height: 100vh;
+    }
+  }
 `;
 
 // ─── Helpers ──────────────────────────────────────────────
@@ -391,6 +676,198 @@ const statusClass = (s) => {
   return m[s] || "badge-available";
 };
 
+// ─── Doughnut Chart Component ──────────────────────────────
+const DoughnutChart = ({ data, colors, size = 200 }) => {
+  const total = data.reduce((sum, item) => sum + item.value, 0);
+  let currentAngle = -90;
+
+  const segments = data.map((item, index) => {
+    const percentage = (item.value / total) * 100;
+    const angle = (percentage / 100) * 360;
+    const startAngle = currentAngle;
+    const endAngle = currentAngle + angle;
+    currentAngle = endAngle;
+
+    const startX =
+      size / 2 + (size / 2 - 20) * Math.cos((startAngle * Math.PI) / 180);
+    const startY =
+      size / 2 + (size / 2 - 20) * Math.sin((startAngle * Math.PI) / 180);
+    const endX =
+      size / 2 + (size / 2 - 20) * Math.cos((endAngle * Math.PI) / 180);
+    const endY =
+      size / 2 + (size / 2 - 20) * Math.sin((endAngle * Math.PI) / 180);
+
+    const largeArcFlag = angle > 180 ? 1 : 0;
+
+    const innerRadius = size / 2 - 60;
+    const innerStartX =
+      size / 2 + innerRadius * Math.cos((startAngle * Math.PI) / 180);
+    const innerStartY =
+      size / 2 + innerRadius * Math.sin((startAngle * Math.PI) / 180);
+    const innerEndX =
+      size / 2 + innerRadius * Math.cos((endAngle * Math.PI) / 180);
+    const innerEndY =
+      size / 2 + innerRadius * Math.sin((endAngle * Math.PI) / 180);
+
+    const path = `
+      M ${startX} ${startY}
+      A ${size / 2 - 20} ${size / 2 - 20} 0 ${largeArcFlag} 1 ${endX} ${endY}
+      L ${innerEndX} ${innerEndY}
+      A ${innerRadius} ${innerRadius} 0 ${largeArcFlag} 0 ${innerStartX} ${innerStartY}
+      Z
+    `;
+
+    return { path, color: colors[index % colors.length], ...item };
+  });
+
+  return (
+    <div
+      style={{
+        display: "flex",
+        alignItems: "center",
+        gap: "32px",
+        flexWrap: "wrap",
+      }}
+    >
+      <svg width={size} height={size} style={{ flexShrink: 0 }}>
+        {segments.map((segment, index) => (
+          <path
+            key={index}
+            d={segment.path}
+            fill={segment.color}
+            opacity={0.8}
+            style={{ transition: "opacity 0.2s" }}
+            onMouseEnter={(e) => (e.target.style.opacity = 1)}
+            onMouseLeave={(e) => (e.target.style.opacity = 0.8)}
+          />
+        ))}
+        <circle cx={size / 2} cy={size / 2} r={size / 2 - 60} fill="#141720" />
+        <text
+          x={size / 2}
+          y={size / 2 - 10}
+          textAnchor="middle"
+          fill="#fff"
+          fontSize="24"
+          fontWeight="bold"
+        >
+          {total}
+        </text>
+        <text
+          x={size / 2}
+          y={size / 2 + 15}
+          textAnchor="middle"
+          fill="#666"
+          fontSize="12"
+        >
+          Total
+        </text>
+      </svg>
+      <div style={{ flex: 1, minWidth: "200px" }}>
+        {segments.map((segment, index) => (
+          <div
+            key={index}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              padding: "8px 0",
+              borderBottom:
+                index < segments.length - 1
+                  ? "1px solid rgba(255,255,255,0.05)"
+                  : "none",
+            }}
+          >
+            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+              <div
+                style={{
+                  width: "12px",
+                  height: "12px",
+                  borderRadius: "3px",
+                  background: segment.color,
+                }}
+              />
+              <span style={{ fontSize: "14px", color: "#ccc" }}>
+                {segment.label}
+              </span>
+            </div>
+            <span
+              style={{ fontSize: "14px", fontWeight: "600", color: "#fff" }}
+            >
+              {segment.value} ({((segment.value / total) * 100).toFixed(1)}%)
+            </span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+// ─── Bar Chart Component ──────────────────────────────────
+const BarChart = ({ data, colors, height = 300 }) => {
+  const maxValue = Math.max(...data.map((item) => item.value));
+
+  return (
+    <div style={{ width: "100%" }}>
+      {data.map((item, index) => {
+        const percentage = (item.value / maxValue) * 100;
+        return (
+          <div key={index} style={{ marginBottom: "16px" }}>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                marginBottom: "8px",
+              }}
+            >
+              <span style={{ fontSize: "14px", color: "#ccc" }}>
+                {item.label}
+              </span>
+              <span
+                style={{ fontSize: "14px", fontWeight: "600", color: "#fff" }}
+              >
+                {item.value}
+              </span>
+            </div>
+            <div
+              style={{
+                height: "32px",
+                borderRadius: "6px",
+                background: "rgba(255, 255, 255, 0.05)",
+                overflow: "hidden",
+                position: "relative",
+              }}
+            >
+              <div
+                style={{
+                  height: "100%",
+                  width: `${percentage}%`,
+                  background: colors[index % colors.length],
+                  transition: "width 0.5s ease",
+                  display: "flex",
+                  alignItems: "center",
+                  paddingLeft: "12px",
+                }}
+              >
+                {item.secondaryValue && (
+                  <span
+                    style={{
+                      fontSize: "12px",
+                      color: "#fff",
+                      fontWeight: "500",
+                    }}
+                  >
+                    {item.secondaryValue}
+                  </span>
+                )}
+              </div>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+};
+
 // ─── App ──────────────────────────────────────────────────
 export default function MaguruAutoDashboard() {
   const navigate = useNavigate();
@@ -398,7 +875,7 @@ export default function MaguruAutoDashboard() {
 
   const [cars, setCars] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [view, setView] = useState("list"); // list | detail | add | edit | analytics | users
+  const [view, setView] = useState("list");
   const [selected, setSelected] = useState(null);
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState("All");
@@ -408,6 +885,7 @@ export default function MaguruAutoDashboard() {
   const [form, setForm] = useState(defaultForm());
   const [imgPreviews, setImgPreviews] = useState([]);
   const [submitting, setSubmitting] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   function defaultForm() {
     return {
@@ -429,7 +907,6 @@ export default function MaguruAutoDashboard() {
     };
   }
 
-  // Helper function for authenticated API calls
   const authenticatedFetch = async (url, options = {}) => {
     const headers = {
       ...options.headers,
@@ -444,7 +921,6 @@ export default function MaguruAutoDashboard() {
       headers,
     });
 
-    // Handle 401 Unauthorized
     if (response.status === 401) {
       logout();
       navigate("/admin/login");
@@ -460,7 +936,6 @@ export default function MaguruAutoDashboard() {
     setTimeout(() => setToast(null), 3200);
   }, []);
 
-  // ── Fetch all cars ──
   const fetchCars = useCallback(async () => {
     setLoading(true);
     try {
@@ -468,14 +943,12 @@ export default function MaguruAutoDashboard() {
         "Content-Type": "application/json",
       };
 
-      // Add auth token to protected endpoints
       if (token) {
         headers["Authorization"] = `Bearer ${token}`;
       }
 
       const res = await fetch(`${API_BASE}/cars`, { headers });
 
-      // Handle 401 Unauthorized - token expired or invalid
       if (res.status === 401) {
         logout();
         navigate("/admin/login");
@@ -488,13 +961,10 @@ export default function MaguruAutoDashboard() {
       }
 
       const data = await res.json();
-      // Handle both direct array and Laravel's data wrapper
       setCars(Array.isArray(data) ? data : data.data || []);
     } catch (error) {
       console.error("Failed to fetch cars:", error);
       showToast("Failed to load cars from database", "error");
-      // For development/testing: uncomment the line below to use sample data
-      // setCars(sampleCars());
     }
     setLoading(false);
   }, [showToast, token, logout, navigate]);
@@ -503,7 +973,6 @@ export default function MaguruAutoDashboard() {
     fetchCars();
   }, [fetchCars]);
 
-  // ── Filtered / searched list ──
   const filtered = cars.filter((c) => {
     const q = search.toLowerCase();
     const matchQ =
@@ -514,7 +983,6 @@ export default function MaguruAutoDashboard() {
     return matchQ && matchS && matchM;
   });
 
-  // ── Stats ──
   const stats = {
     total: cars.length,
     available: cars.filter((c) => c.status === "Available").length,
@@ -524,12 +992,13 @@ export default function MaguruAutoDashboard() {
       : 0,
   };
 
-  // ── Handlers ──
   const openAdd = () => {
     setForm(defaultForm());
     setImgPreviews([]);
     setView("add");
+    setMobileMenuOpen(false);
   };
+
   const openEdit = (car) => {
     setForm({
       ...car,
@@ -540,10 +1009,13 @@ export default function MaguruAutoDashboard() {
     });
     setImgPreviews(car.images || []);
     setView("edit");
+    setMobileMenuOpen(false);
   };
+
   const openDetail = (car) => {
     setSelected(car);
     setView("detail");
+    setMobileMenuOpen(false);
   };
 
   const handleSubmit = async () => {
@@ -596,7 +1068,6 @@ export default function MaguruAutoDashboard() {
       const data = await res.json();
 
       if (res.ok) {
-        // Refresh from server to ensure sync
         await fetchCars();
         showToast(
           isEdit ? "Car updated successfully" : "Car added successfully",
@@ -634,11 +1105,9 @@ export default function MaguruAutoDashboard() {
 
     for (const file of newImages) {
       try {
-        // Create preview immediately
         const preview = URL.createObjectURL(file);
         uploadedImages.push(preview);
 
-        // Upload to server
         const fd = new FormData();
         fd.append("image", file);
         const res = await authenticatedFetch(`${API_BASE}/cars/upload`, {
@@ -673,7 +1142,6 @@ export default function MaguruAutoDashboard() {
       });
 
       if (res.ok) {
-        // Refresh from server
         await fetchCars();
         setConfirmDelete(null);
         if (view === "detail") setView("list");
@@ -690,7 +1158,6 @@ export default function MaguruAutoDashboard() {
     }
   };
 
-  // ── Renders ──
   const renderStats = () => (
     <div className="mgr-stats">
       {[
@@ -711,341 +1178,161 @@ export default function MaguruAutoDashboard() {
   );
 
   const renderAnalytics = () => {
-    const statusBreakdown = STATUSES.map((status) => ({
-      status,
-      count: cars.filter((c) => c.status === status).length,
+    const statusData = STATUSES.map((status) => ({
+      label: status,
+      value: cars.filter((c) => c.status === status).length,
     }));
 
-    const makeBreakdown = [...new Set(cars.map((c) => c.make))]
+    const makeData = [...new Set(cars.map((c) => c.make))]
       .map((make) => ({
-        make,
-        count: cars.filter((c) => c.make === make).length,
-        avgPrice:
+        label: make,
+        value: cars.filter((c) => c.make === make).length,
+        secondaryValue: fmt(
           cars
             .filter((c) => c.make === make)
             .reduce((sum, c) => sum + parseFloat(c.price), 0) /
             cars.filter((c) => c.make === make).length || 0,
+        ),
       }))
-      .sort((a, b) => b.count - a.count)
+      .sort((a, b) => b.value - a.value)
       .slice(0, 8);
 
-    const bodyTypeBreakdown = [...new Set(cars.map((c) => c.body_type))]
+    const bodyTypeData = [...new Set(cars.map((c) => c.body_type))]
       .map((type) => ({
-        type,
-        count: cars.filter((c) => c.body_type === type).length,
+        label: type,
+        value: cars.filter((c) => c.body_type === type).length,
       }))
-      .sort((a, b) => b.count - a.count);
+      .sort((a, b) => b.value - a.value);
 
     const priceRanges = [
-      { range: "< 1M", min: 0, max: 1000000, count: 0 },
-      { range: "1M - 2M", min: 1000000, max: 2000000, count: 0 },
-      { range: "2M - 3M", min: 2000000, max: 3000000, count: 0 },
-      { range: "3M - 5M", min: 3000000, max: 5000000, count: 0 },
-      { range: "5M - 8M", min: 5000000, max: 8000000, count: 0 },
-      { range: "> 8M", min: 8000000, max: Infinity, count: 0 },
+      { range: "< 1M", min: 0, max: 1000000 },
+      { range: "1M - 2M", min: 1000000, max: 2000000 },
+      { range: "2M - 3M", min: 2000000, max: 3000000 },
+      { range: "3M - 5M", min: 3000000, max: 5000000 },
+      { range: "5M - 8M", min: 5000000, max: 8000000 },
+      { range: "> 8M", min: 8000000, max: Infinity },
     ];
 
-    cars.forEach((car) => {
-      const price = parseFloat(car.price);
-      priceRanges.forEach((range) => {
-        if (price >= range.min && price < range.max) range.count++;
-      });
-    });
+    const priceData = priceRanges.map((range) => ({
+      label: `KES ${range.range}`,
+      value: cars.filter((car) => {
+        const price = parseFloat(car.price);
+        return price >= range.min && price < range.max;
+      }).length,
+    }));
+
+    const totalRevenue = cars.reduce((sum, c) => sum + parseFloat(c.price), 0);
+    const avgPrice = cars.length > 0 ? totalRevenue / cars.length : 0;
+    const soldCount = cars.filter((c) => c.status === "Sold").length;
+    const conversionRate =
+      cars.length > 0 ? (soldCount / cars.length) * 100 : 0;
+
+    const statusColors = ["#ef4444", "#3b82f6", "#10b981", "#f59e0b"];
+    const makeColors = [
+      "#e8174b",
+      "#f09f1e",
+      "#4da6ff",
+      "#5dcc8e",
+      "#8b5cf6",
+      "#ec4899",
+      "#06b6d4",
+      "#f97316",
+    ];
+    const bodyTypeColors = [
+      "#3b82f6",
+      "#8b5cf6",
+      "#06b6d4",
+      "#10b981",
+      "#f59e0b",
+      "#ef4444",
+    ];
+    const priceColors = [
+      "#10b981",
+      "#06b6d4",
+      "#3b82f6",
+      "#8b5cf6",
+      "#ec4899",
+      "#ef4444",
+    ];
 
     return (
-      <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: "24px" }}>
+      <div className="analytics-container">
         {/* Key Metrics */}
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
-            gap: "16px",
-          }}
-        >
+        <div className="metrics-grid">
           <div
+            className="metric-card"
             style={{
-              padding: "20px",
-              borderRadius: "12px",
               background:
                 "linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, rgba(249, 115, 22, 0.1) 100%)",
               border: "1px solid rgba(239, 68, 68, 0.2)",
             }}
           >
-            <div
-              style={{ fontSize: "12px", color: "#999", marginBottom: "8px" }}
-            >
-              Total Revenue
-            </div>
-            <div
-              style={{ fontSize: "24px", fontWeight: "bold", color: "#fff" }}
-            >
-              {fmt(cars.reduce((sum, c) => sum + parseFloat(c.price), 0))}
-            </div>
-            <div style={{ fontSize: "12px", color: "#666", marginTop: "8px" }}>
-              From {cars.length} listings
-            </div>
+            <div className="metric-label">Total Revenue</div>
+            <div className="metric-value">{fmt(totalRevenue)}</div>
+            <div className="metric-change">From {cars.length} listings</div>
           </div>
 
           <div
+            className="metric-card"
             style={{
-              padding: "20px",
-              borderRadius: "12px",
               background:
                 "linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(99, 102, 241, 0.1) 100%)",
               border: "1px solid rgba(59, 130, 246, 0.2)",
             }}
           >
-            <div
-              style={{ fontSize: "12px", color: "#999", marginBottom: "8px" }}
-            >
-              Avg Price per Car
-            </div>
-            <div
-              style={{ fontSize: "24px", fontWeight: "bold", color: "#fff" }}
-            >
-              {fmt(
-                cars.length > 0
-                  ? cars.reduce((sum, c) => sum + parseFloat(c.price), 0) /
-                      cars.length
-                  : 0,
-              )}
-            </div>
-            <div style={{ fontSize: "12px", color: "#666", marginTop: "8px" }}>
-              Across all vehicles
-            </div>
+            <div className="metric-label">Avg Price per Car</div>
+            <div className="metric-value">{fmt(avgPrice)}</div>
+            <div className="metric-change">Across all vehicles</div>
           </div>
 
           <div
+            className="metric-card"
             style={{
-              padding: "20px",
-              borderRadius: "12px",
               background:
                 "linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(34, 197, 94, 0.1) 100%)",
               border: "1px solid rgba(16, 185, 129, 0.2)",
             }}
           >
-            <div
-              style={{ fontSize: "12px", color: "#999", marginBottom: "8px" }}
-            >
-              Listed Vehicles
-            </div>
-            <div
-              style={{ fontSize: "24px", fontWeight: "bold", color: "#fff" }}
-            >
-              {cars.length}
-            </div>
-            <div style={{ fontSize: "12px", color: "#666", marginTop: "8px" }}>
+            <div className="metric-label">Listed Vehicles</div>
+            <div className="metric-value">{cars.length}</div>
+            <div className="metric-change">
+              <Icon name="trendUp" size={14} />
               {cars.filter((c) => c.status === "Available").length} available
             </div>
           </div>
 
           <div
+            className="metric-card"
             style={{
-              padding: "20px",
-              borderRadius: "12px",
               background:
                 "linear-gradient(135deg, rgba(168, 85, 247, 0.1) 0%, rgba(139, 92, 246, 0.1) 100%)",
               border: "1px solid rgba(168, 85, 247, 0.2)",
             }}
           >
-            <div
-              style={{ fontSize: "12px", color: "#999", marginBottom: "8px" }}
-            >
-              Sold Vehicles
-            </div>
-            <div
-              style={{ fontSize: "24px", fontWeight: "bold", color: "#fff" }}
-            >
-              {cars.filter((c) => c.status === "Sold").length}
-            </div>
-            <div style={{ fontSize: "12px", color: "#666", marginTop: "8px" }}>
-              {cars.length > 0
-                ? (
-                    (cars.filter((c) => c.status === "Sold").length /
-                      cars.length) *
-                    100
-                  ).toFixed(1)
-                : 0}
-              % conversion
-            </div>
+            <div className="metric-label">Conversion Rate</div>
+            <div className="metric-value">{conversionRate.toFixed(1)}%</div>
+            <div className="metric-change">{soldCount} vehicles sold</div>
           </div>
         </div>
 
-        {/* Status Distribution */}
-        <div
-          style={{
-            padding: "24px",
-            borderRadius: "16px",
-            background: "rgba(0, 0, 0, 0.3)",
-            border: "1px solid rgba(255, 255, 255, 0.1)",
-          }}
-        >
-          <h3
-            style={{
-              marginBottom: "20px",
-              fontSize: "18px",
-              fontWeight: "600",
-              color: "#fff",
-            }}
-          >
-            Vehicle Status Distribution
-          </h3>
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))",
-              gap: "16px",
-            }}
-          >
-            {statusBreakdown.map((item, idx) => {
-              const total = cars.length || 1;
-              const percentage = (item.count / total) * 100;
-              const colors = ["#ef4444", "#3b82f6", "#10b981", "#f59e0b"];
-              return (
-                <div key={idx}>
-                  <div
-                    style={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      marginBottom: "8px",
-                    }}
-                  >
-                    <span style={{ fontSize: "14px", color: "#ccc" }}>
-                      {item.status}
-                    </span>
-                    <span
-                      style={{
-                        fontSize: "14px",
-                        fontWeight: "600",
-                        color: "#fff",
-                      }}
-                    >
-                      {item.count}
-                    </span>
-                  </div>
-                  <div
-                    style={{
-                      height: "8px",
-                      borderRadius: "4px",
-                      background: "rgba(255, 255, 255, 0.1)",
-                      overflow: "hidden",
-                    }}
-                  >
-                    <div
-                      style={{
-                        height: "100%",
-                        width: `${percentage}%`,
-                        background: colors[idx % colors.length],
-                        transition: "width 0.3s ease",
-                      }}
-                    />
-                  </div>
-                  <div
-                    style={{
-                      fontSize: "12px",
-                      color: "#666",
-                      marginTop: "4px",
-                    }}
-                  >
-                    {percentage.toFixed(1)}%
-                  </div>
-                </div>
-              );
-            })}
+        {/* Status Distribution - Doughnut Chart */}
+        <div className="chart-card">
+          <div className="chart-header">
+            <h3 className="chart-title">Vehicle Status Distribution</h3>
+            <p className="chart-subtitle">Current inventory status breakdown</p>
           </div>
+          <DoughnutChart data={statusData} colors={statusColors} size={240} />
         </div>
 
-        {/* Top Makes */}
-        <div
-          style={{
-            padding: "24px",
-            borderRadius: "16px",
-            background: "rgba(0, 0, 0, 0.3)",
-            border: "1px solid rgba(255, 255, 255, 0.1)",
-          }}
-        >
-          <h3
-            style={{
-              marginBottom: "20px",
-              fontSize: "18px",
-              fontWeight: "600",
-              color: "#fff",
-            }}
-          >
-            Top Car Makes
-          </h3>
-          <div style={{ display: "grid", gap: "12px" }}>
-            {makeBreakdown.map((item, idx) => (
-              <div
-                key={idx}
-                style={{
-                  padding: "12px",
-                  borderRadius: "8px",
-                  background: "rgba(255, 255, 255, 0.05)",
-                  border: "1px solid rgba(255, 255, 255, 0.08)",
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                }}
-              >
-                <div>
-                  <div
-                    style={{
-                      fontSize: "14px",
-                      fontWeight: "500",
-                      color: "#fff",
-                    }}
-                  >
-                    {item.make}
-                  </div>
-                  <div
-                    style={{
-                      fontSize: "12px",
-                      color: "#666",
-                      marginTop: "2px",
-                    }}
-                  >
-                    Avg: {fmt(item.avgPrice)}
-                  </div>
-                </div>
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "12px",
-                  }}
-                >
-                  <div
-                    style={{
-                      width: "100px",
-                      height: "6px",
-                      borderRadius: "3px",
-                      background: "rgba(255, 255, 255, 0.1)",
-                      overflow: "hidden",
-                    }}
-                  >
-                    <div
-                      style={{
-                        height: "100%",
-                        width: `${(item.count / makeBreakdown[0].count) * 100}%`,
-                        background: "linear-gradient(90deg, #ef4444, #f97316)",
-                      }}
-                    />
-                  </div>
-                  <span
-                    style={{
-                      fontSize: "14px",
-                      fontWeight: "600",
-                      color: "#fff",
-                      minWidth: "30px",
-                    }}
-                  >
-                    {item.count}
-                  </span>
-                </div>
-              </div>
-            ))}
+        {/* Top Makes - Bar Chart */}
+        <div className="chart-card">
+          <div className="chart-header">
+            <h3 className="chart-title">Top Car Makes</h3>
+            <p className="chart-subtitle">
+              Most popular brands with average prices
+            </p>
           </div>
+          <BarChart data={makeData} colors={makeColors} />
         </div>
 
         {/* Body Type & Price Range */}
@@ -1056,152 +1343,20 @@ export default function MaguruAutoDashboard() {
             gap: "20px",
           }}
         >
-          <div
-            style={{
-              padding: "24px",
-              borderRadius: "16px",
-              background: "rgba(0, 0, 0, 0.3)",
-              border: "1px solid rgba(255, 255, 255, 0.1)",
-            }}
-          >
-            <h3
-              style={{
-                marginBottom: "20px",
-                fontSize: "18px",
-                fontWeight: "600",
-                color: "#fff",
-              }}
-            >
-              Vehicle Type Distribution
-            </h3>
-            <div style={{ display: "grid", gap: "12px" }}>
-              {bodyTypeBreakdown.map((item, idx) => {
-                const total = cars.length || 1;
-                const percentage = (item.count / total) * 100;
-                return (
-                  <div
-                    key={idx}
-                    style={{
-                      padding: "12px",
-                      borderRadius: "8px",
-                      background: "rgba(255, 255, 255, 0.05)",
-                    }}
-                  >
-                    <div
-                      style={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        marginBottom: "8px",
-                      }}
-                    >
-                      <span style={{ fontSize: "14px", color: "#ccc" }}>
-                        {item.type}
-                      </span>
-                      <span
-                        style={{
-                          fontSize: "14px",
-                          fontWeight: "600",
-                          color: "#fff",
-                        }}
-                      >
-                        {item.count}
-                      </span>
-                    </div>
-                    <div
-                      style={{
-                        height: "6px",
-                        borderRadius: "3px",
-                        background: "rgba(255, 255, 255, 0.1)",
-                        overflow: "hidden",
-                      }}
-                    >
-                      <div
-                        style={{
-                          height: "100%",
-                          width: `${percentage}%`,
-                          background:
-                            "linear-gradient(90deg, #3b82f6, #8b5cf6)",
-                        }}
-                      />
-                    </div>
-                  </div>
-                );
-              })}
+          <div className="chart-card">
+            <div className="chart-header">
+              <h3 className="chart-title">Vehicle Type Distribution</h3>
+              <p className="chart-subtitle">Breakdown by body type</p>
             </div>
+            <BarChart data={bodyTypeData} colors={bodyTypeColors} />
           </div>
 
-          <div
-            style={{
-              padding: "24px",
-              borderRadius: "16px",
-              background: "rgba(0, 0, 0, 0.3)",
-              border: "1px solid rgba(255, 255, 255, 0.1)",
-            }}
-          >
-            <h3
-              style={{
-                marginBottom: "20px",
-                fontSize: "18px",
-                fontWeight: "600",
-                color: "#fff",
-              }}
-            >
-              Price Range Distribution
-            </h3>
-            <div style={{ display: "grid", gap: "12px" }}>
-              {priceRanges.map((item, idx) => {
-                const total = cars.length || 1;
-                const percentage = (item.count / total) * 100;
-                return (
-                  <div
-                    key={idx}
-                    style={{
-                      padding: "12px",
-                      borderRadius: "8px",
-                      background: "rgba(255, 255, 255, 0.05)",
-                    }}
-                  >
-                    <div
-                      style={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        marginBottom: "8px",
-                      }}
-                    >
-                      <span style={{ fontSize: "14px", color: "#ccc" }}>
-                        KES {item.range}
-                      </span>
-                      <span
-                        style={{
-                          fontSize: "14px",
-                          fontWeight: "600",
-                          color: "#fff",
-                        }}
-                      >
-                        {item.count}
-                      </span>
-                    </div>
-                    <div
-                      style={{
-                        height: "6px",
-                        borderRadius: "3px",
-                        background: "rgba(255, 255, 255, 0.1)",
-                        overflow: "hidden",
-                      }}
-                    >
-                      <div
-                        style={{
-                          height: "100%",
-                          width: `${percentage}%`,
-                          background:
-                            "linear-gradient(90deg, #10b981, #06b6d4)",
-                        }}
-                      />
-                    </div>
-                  </div>
-                );
-              })}
+          <div className="chart-card">
+            <div className="chart-header">
+              <h3 className="chart-title">Price Range Distribution</h3>
+              <p className="chart-subtitle">Vehicles by price bracket</p>
             </div>
+            <BarChart data={priceData} colors={priceColors} />
           </div>
         </div>
       </div>
@@ -1307,6 +1462,7 @@ export default function MaguruAutoDashboard() {
             alignItems: "center",
             gap: 12,
             marginBottom: 20,
+            flexWrap: "wrap",
           }}
         >
           <button className="btn btn-ghost" onClick={() => setView("list")}>
@@ -1700,13 +1856,12 @@ export default function MaguruAutoDashboard() {
     );
   };
 
-  // ── Confirm Delete Modal ──
   const renderConfirmDelete = () =>
     confirmDelete && (
       <div className="mgr-overlay" onClick={() => setConfirmDelete(null)}>
         <div
           className="mgr-modal"
-          style={{ width: 380 }}
+          style={{ width: 380, maxWidth: "90%" }}
           onClick={(e) => e.stopPropagation()}
         >
           <div className="mgr-modal-body" style={{ padding: "28px 24px 24px" }}>
@@ -1738,13 +1893,26 @@ export default function MaguruAutoDashboard() {
       </div>
     );
 
-  // ── Main Render ──
   return (
     <>
       <style>{css}</style>
       <div className="mgr-root">
+        {/* Mobile Menu Button */}
+        <button
+          className="mgr-mobile-menu-btn"
+          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+        >
+          <Icon name="menu" size={20} />
+        </button>
+
+        {/* Mobile Overlay */}
+        <div
+          className={`mgr-overlay-mobile ${mobileMenuOpen ? "show" : ""}`}
+          onClick={() => setMobileMenuOpen(false)}
+        />
+
         {/* Sidebar */}
-        <aside className="mgr-sidebar">
+        <aside className={`mgr-sidebar ${mobileMenuOpen ? "mobile-open" : ""}`}>
           <div className="flex items-center justify-center mt-4 overflow-hidden rounded w-18 h-14">
             <img
               src={Logo}
@@ -1778,6 +1946,7 @@ export default function MaguruAutoDashboard() {
                 onClick={() => {
                   if (n.id === "inventory") setView("list");
                   else setView(n.id);
+                  setMobileMenuOpen(false);
                 }}
               >
                 <Icon name={n.icon} size={18} />
@@ -1844,7 +2013,13 @@ export default function MaguruAutoDashboard() {
                   <span style={{ fontSize: "14px", color: "#ccc" }}>
                     {user.name}
                   </span>
-                  <span style={{ fontSize: "12px", color: "#666" }}>
+                  <span
+                    style={{
+                      fontSize: "12px",
+                      color: "#666",
+                      display: window.innerWidth > 480 ? "inline" : "none",
+                    }}
+                  >
                     ({user.email})
                   </span>
                 </div>
@@ -1926,154 +2101,4 @@ export default function MaguruAutoDashboard() {
       </div>
     </>
   );
-}
-
-// ─── Sample Data (fallback when API is not reachable) ──────
-function sampleCars() {
-  return [
-    {
-      id: 1,
-      title: "2023 Toyota Camry XLE",
-      make: "Toyota",
-      model: "Camry",
-      year: 2023,
-      mileage: 28000,
-      price: 3200000,
-      transmission: "Automatic",
-      fuel_type: "Petrol",
-      body_type: "Sedan",
-      color: "Silver",
-      engine_cc: 2500,
-      condition: "Good",
-      status: "Available",
-      description: "Well-maintained family sedan with full service history.",
-      image_url: null,
-    },
-    {
-      id: 2,
-      title: "2022 Honda CR-V Sport",
-      make: "Honda",
-      model: "CR-V",
-      year: 2022,
-      mileage: 42000,
-      price: 4100000,
-      transmission: "Automatic",
-      fuel_type: "Hybrid",
-      body_type: "SUV",
-      color: "Blue",
-      engine_cc: 1500,
-      condition: "Like New",
-      status: "Available",
-      description: "Hybrid SUV, excellent fuel economy. One owner.",
-      image_url: null,
-    },
-    {
-      id: 3,
-      title: "2021 BMW 320i M-Sport",
-      make: "BMW",
-      model: "320i",
-      year: 2021,
-      mileage: 55000,
-      price: 5800000,
-      transmission: "Automatic",
-      fuel_type: "Petrol",
-      body_type: "Sedan",
-      color: "Black",
-      engine_cc: 2000,
-      condition: "Good",
-      status: "Sold",
-      description: "M-Sport package, panoramic sunroof, full leather.",
-      image_url: null,
-    },
-    {
-      id: 4,
-      title: "2023 Hyundai Tucson N-Line",
-      make: "Hyundai",
-      model: "Tucson",
-      year: 2023,
-      mileage: 12000,
-      price: 3600000,
-      transmission: "Automatic",
-      fuel_type: "Petrol",
-      body_type: "SUV",
-      color: "White",
-      engine_cc: 1600,
-      condition: "Like New",
-      status: "Reserved",
-      description: "N-Line trim, loaded with tech features.",
-      image_url: null,
-    },
-    {
-      id: 5,
-      title: "2020 Ford Ranger Wildtrak",
-      make: "Ford",
-      model: "Ranger",
-      year: 2020,
-      mileage: 68000,
-      price: 2900000,
-      transmission: "Manual",
-      fuel_type: "Diesel",
-      body_type: "Pickup",
-      color: "Grey",
-      engine_cc: 2000,
-      condition: "Fair",
-      status: "Available",
-      description: "Wildtrak trim, tow bar fitted, 4WD.",
-      image_url: null,
-    },
-    {
-      id: 6,
-      title: "2022 Volkswagen Golf GTI",
-      make: "Volkswagen",
-      model: "Golf",
-      year: 2022,
-      mileage: 33000,
-      price: 3900000,
-      transmission: "Manual",
-      fuel_type: "Petrol",
-      body_type: "Hatchback",
-      color: "Red",
-      engine_cc: 1800,
-      condition: "Good",
-      status: "On Hold",
-      description: "GTI performance package, sporty and fun.",
-      image_url: null,
-    },
-    {
-      id: 7,
-      title: "2023 Kia Sportage EX",
-      make: "Kia",
-      model: "Sportage",
-      year: 2023,
-      mileage: 9000,
-      price: 3400000,
-      transmission: "Automatic",
-      fuel_type: "Petrol",
-      body_type: "SUV",
-      color: "Brown",
-      engine_cc: 1600,
-      condition: "Like New",
-      status: "Available",
-      description: "EX trim with Apple CarPlay and heated seats.",
-      image_url: null,
-    },
-    {
-      id: 8,
-      title: "2021 Mercedes C200 Avantgarde",
-      make: "Mercedes-Benz",
-      model: "C200",
-      year: 2021,
-      mileage: 47000,
-      price: 6200000,
-      transmission: "Automatic",
-      fuel_type: "Petrol",
-      body_type: "Sedan",
-      color: "Black",
-      engine_cc: 1600,
-      condition: "Good",
-      status: "Available",
-      description: "Avantgarde package, AMG-style bumpers.",
-      image_url: null,
-    },
-  ];
 }

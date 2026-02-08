@@ -74,9 +74,9 @@ export default function Layout({ children, currentPageName }) {
                 className="object-contain rounded-lg w-18 h-14"
               />
 
-              {/* <span className="text-xl font-bold text-white">
+              <span className="text-xl font-bold text-transparent bg-gradient-to-r from-pink-500 to-orange-500 bg-clip-text">
                 Maguru Automobile
-              </span> */}
+              </span>
             </Link>
 
             {/* Desktop Navigation */}
@@ -225,6 +225,14 @@ export default function Layout({ children, currentPageName }) {
                     Buy a Car
                   </Link>
                 </li>
+                <li>
+                  <Link
+                    to={createPageUrl("AboutUs")}
+                    className="text-sm transition-colors text-slate-400 hover:text-white"
+                  >
+                    About us
+                  </Link>
+                </li>
                 {/* <li>
                   <Link
                     to={createPageUrl("SellCar")}
@@ -240,14 +248,14 @@ export default function Layout({ children, currentPageName }) {
             <div>
               <h4 className="mb-4 font-semibold text-white">Services</h4>
               <ul className="space-y-3">
-                <li>
+                {/* <li>
                   <a
                     href="#"
                     className="text-sm transition-colors text-slate-400 hover:text-white"
                   >
                     Car Financing
                   </a>
-                </li>
+                </li> */}
                 <li>
                   <a
                     href="#"

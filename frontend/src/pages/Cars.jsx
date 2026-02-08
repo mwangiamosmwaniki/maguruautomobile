@@ -20,7 +20,13 @@ export default function Cars() {
   const [viewMode, setViewMode] = useState("grid");
   const [activeTab, setActiveTab] = useState("all");
   const [cars, setCars] = useState([]);
+  const [conditions, setConditions] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 12;
+
+  // Allowed conditions to display
+  const allowedConditions = ["Foreign Used", "Locally Used"];
 
   // Fetch cars data
   useEffect(() => {
@@ -34,6 +40,15 @@ export default function Cars() {
         }
         const data = await response.json();
         setCars(Array.isArray(data) ? data : []);
+
+        // Extract unique conditions from database and filter to allowed ones
+        const uniqueConditions = [
+          ...new Set(data.map((car) => car.condition).filter(Boolean)),
+        ];
+        const filteredConditions = uniqueConditions
+          .filter((cond) => allowedConditions.includes(cond))
+          .sort();
+        setConditions(filteredConditions);
       } catch (error) {
         console.error("Error fetching cars:", error);
         setCars([]);
@@ -55,6 +70,7 @@ export default function Cars() {
   const clearFilters = () => {
     setFilters({});
     setSearchQuery("");
+    setCurrentPage(1);
   };
 
   // Filter cars based on criteria
@@ -71,10 +87,7 @@ export default function Cars() {
 
     // Tab filter (condition)
     if (activeTab !== "all") {
-      if (activeTab === "fresh" && car.condition !== "Fresh Import")
-        return false;
-      if (activeTab === "local" && car.condition !== "Locally Used")
-        return false;
+      if (car.condition !== activeTab) return false;
     }
 
     // Make
@@ -114,6 +127,12 @@ export default function Cars() {
 
     return true;
   });
+
+  // Pagination logic
+  const totalPages = Math.ceil(filteredCars.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedCars = filteredCars.slice(startIndex, endIndex);
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-black">
@@ -220,18 +239,15 @@ export default function Cars() {
                     >
                       All
                     </TabsTrigger>
-                    <TabsTrigger
-                      value="fresh"
-                      className="flex-1 sm:flex-none px-4 py-2 text-xs font-medium transition-all duration-300 rounded-md data-[state=active]:bg-gradient-to-r data-[state=active]:from-rose-500 data-[state=active]:to-orange-500 data-[state=active]:text-white data-[state=active]:shadow-md data-[state=active]:shadow-rose-500/25 text-gray-400 hover:text-white"
-                    >
-                      Fresh Imports
-                    </TabsTrigger>
-                    <TabsTrigger
-                      value="local"
-                      className="flex-1 sm:flex-none px-4 py-2 text-xs font-medium transition-all duration-300 rounded-md data-[state=active]:bg-gradient-to-r data-[state=active]:from-rose-500 data-[state=active]:to-orange-500 data-[state=active]:text-white data-[state=active]:shadow-md data-[state=active]:shadow-rose-500/25 text-gray-400 hover:text-white"
-                    >
-                      Locally Used
-                    </TabsTrigger>
+                    {conditions.map((condition) => (
+                      <TabsTrigger
+                        key={condition}
+                        value={condition}
+                        className="flex-1 sm:flex-none px-4 py-2 text-xs font-medium transition-all duration-300 rounded-md data-[state=active]:bg-gradient-to-r data-[state=active]:from-rose-500 data-[state=active]:to-orange-500 data-[state=active]:text-white data-[state=active]:shadow-md data-[state=active]:shadow-rose-500/25 text-gray-400 hover:text-white"
+                      >
+                        {condition}
+                      </TabsTrigger>
+                    ))}
                   </TabsList>
                 </Tabs>
 
@@ -346,28 +362,78 @@ export default function Cars() {
                 </Button>
               </motion.div>
             ) : (
-              <div
-                className={`grid gap-6 ${
-                  viewMode === "grid"
-                    ? "sm:grid-cols-2 xl:grid-cols-3"
-                    : "grid-cols-1"
-                }`}
-              >
-                {filteredCars.map((car, index) => (
-                  <motion.div
-                    key={car.id}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{
-                      duration: 0.4,
-                      delay: index * 0.05,
-                      ease: "easeOut",
-                    }}
-                  >
-                    <CarCard car={car} index={index} />
-                  </motion.div>
-                ))}
-              </div>
+              <>
+                <div
+                  className={`grid gap-6 ${
+                    viewMode === "grid"
+                      ? "sm:grid-cols-2 xl:grid-cols-3"
+                      : "grid-cols-1"
+                  }`}
+                >
+                  {paginatedCars.map((car, index) => (
+                    <motion.div
+                      key={`${car.id}-${index}`}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{
+                        duration: 0.4,
+                        delay: index * 0.05,
+                        ease: "easeOut",
+                      }}
+                    >
+                      <CarCard car={car} index={index} />
+                    </motion.div>
+                  ))}
+                </div>
+
+                {/* Pagination Controls */}
+                {totalPages > 1 && (
+                  <div className="flex items-center justify-center gap-2 mt-12">
+                    <Button
+                      onClick={() =>
+                        setCurrentPage(Math.max(1, currentPage - 1))
+                      }
+                      disabled={currentPage === 1}
+                      variant="outline"
+                      className="px-4 py-2 text-sm text-gray-300 border-gray-700 rounded-lg bg-black/50 hover:bg-gray-700/50 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      Previous
+                    </Button>
+
+                    <div className="flex items-center gap-1">
+                      {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                        (page) => (
+                          <Button
+                            key={page}
+                            onClick={() => setCurrentPage(page)}
+                            variant={
+                              currentPage === page ? "default" : "outline"
+                            }
+                            className={`w-10 h-10 text-xs font-medium rounded-lg transition-all duration-200 ${
+                              currentPage === page
+                                ? "bg-gradient-to-r from-rose-500 to-orange-500 text-white shadow-md shadow-rose-500/25"
+                                : "text-gray-300 border-gray-700 bg-black/50 hover:bg-gray-700/50"
+                            }`}
+                          >
+                            {page}
+                          </Button>
+                        ),
+                      )}
+                    </div>
+
+                    <Button
+                      onClick={() =>
+                        setCurrentPage(Math.min(totalPages, currentPage + 1))
+                      }
+                      disabled={currentPage === totalPages}
+                      variant="outline"
+                      className="px-4 py-2 text-sm text-gray-300 border-gray-700 rounded-lg bg-black/50 hover:bg-gray-700/50 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      Next
+                    </Button>
+                  </div>
+                )}
+              </>
             )}
           </motion.div>
         </div>

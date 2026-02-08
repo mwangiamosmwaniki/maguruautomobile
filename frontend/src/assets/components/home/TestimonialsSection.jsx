@@ -34,7 +34,7 @@ const testimonials = [
 
 export default function TestimonialsSection() {
   return (
-    <section className="py-20 bg-gradient-to-br from-slate-900 to-slate-800 relative overflow-hidden">
+    <section className="py-20 bg-gradient-to-br from-slate-200 to-slate-400 relative overflow-hidden">
       {/* Decorative elements */}
       <div className="absolute top-0 left-0 w-96 h-96 bg-rose-500/10 rounded-full blur-3xl" />
       <div className="absolute bottom-0 right-0 w-96 h-96 bg-orange-500/10 rounded-full blur-3xl" />
@@ -47,13 +47,13 @@ export default function TestimonialsSection() {
           transition={{ duration: 0.5 }}
           className="text-center mb-16"
         >
-          <span className="inline-block px-4 py-1.5 bg-white/10 text-rose-300 rounded-full text-sm font-medium mb-4">
+          <span className="inline-block px-4 py-1.5 bg-white/60 text-rose-600 rounded-full text-sm font-medium mb-4">
             Customer Stories
           </span>
-          <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
+          <h2 className="text-3xl md:text-4xl font-bold text-black mb-4">
             Loved by Thousands of Customers
           </h2>
-          <p className="text-lg text-slate-300 max-w-2xl mx-auto">
+          <p className="text-lg text-slate-700 max-w-2xl mx-auto">
             Don't just take our word for it. Here's what our community has to
             say.
           </p>
@@ -68,10 +68,10 @@ export default function TestimonialsSection() {
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: index * 0.1 }}
             >
-              <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-8 border border-white/10 h-full hover:bg-white/10 transition-colors duration-300">
-                <Quote className="w-10 h-10 text-rose-400/50 mb-6" />
+              <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-8 border border-black/10 h-full hover:bg-black/10 transition-colors duration-300">
+                <Quote className="w-10 h-10 text-rose-700/50 mb-6" />
 
-                <p className="text-slate-200 leading-relaxed mb-6">
+                <p className="text-slate-800 leading-relaxed mb-6">
                   "{testimonial.content}"
                 </p>
 
@@ -79,7 +79,7 @@ export default function TestimonialsSection() {
                   {[...Array(testimonial.rating)].map((_, i) => (
                     <Star
                       key={i}
-                      className="w-4 h-4 fill-amber-400 text-amber-400"
+                      className="w-4 h-4 fill-amber-400 text-amber-900"
                     />
                   ))}
                 </div>
@@ -91,10 +91,10 @@ export default function TestimonialsSection() {
                     className="w-12 h-12 rounded-full object-cover ring-2 ring-white/20"
                   />
                   <div>
-                    <h4 className="font-semibold text-white">
+                    <h4 className="font-semibold text-black">
                       {testimonial.name}
                     </h4>
-                    <p className="text-sm text-slate-400">{testimonial.role}</p>
+                    <p className="text-sm text-slate-700">{testimonial.role}</p>
                   </div>
                 </div>
               </div>

@@ -4,10 +4,14 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\CarController;
 use App\Http\Controllers\Api\AdminController;
 use App\Http\Controllers\Api\UserController;
+use App\Http\Controllers\Api\EnquiryController;
 
 // Auth routes (public)
 Route::post('/auth/login', [AdminController::class, 'login']);
 Route::post('/auth/register', [AdminController::class, 'register']);
+
+// Public enquiry endpoint (for car details form)
+Route::post('/enquiries', [EnquiryController::class, 'store']);
 
 // Protected routes
 Route::middleware('auth:sanctum')->group(function () {
@@ -31,6 +35,12 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/{id}', [UserController::class, 'show']);
         Route::put('/{id}', [UserController::class, 'update']);
         Route::delete('/{id}', [UserController::class, 'destroy']);
+    });
+
+    // Enquiries API (admin access)
+    Route::prefix('enquiries')->group(function () {
+        Route::get('/', [EnquiryController::class, 'index']);
+        Route::get('/{id}', [EnquiryController::class, 'show']);
     });
 });
 

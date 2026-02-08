@@ -1,6 +1,5 @@
-import { useEffect, React } from "react";
+import { useEffect, React, useState } from "react";
 import {
-  Car,
   Shield,
   TrendingUp,
   Users,
@@ -11,8 +10,55 @@ import {
   Heart,
   Sparkles,
   ArrowRight,
+  Car,
 } from "lucide-react";
 import { motion } from "framer-motion";
+import CarYard1 from "../assets/images/CarYard1.png";
+import CarYard2 from "../assets/images/CarYard3.png";
+
+// Lazy Loading Image Component
+const LazyImage = ({ src, alt, className, containerClassName }) => {
+  const [isLoaded, setIsLoaded] = useState(false);
+  const [isInView, setIsInView] = useState(false);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            setIsInView(true);
+            observer.disconnect();
+          }
+        });
+      },
+      { threshold: 0.1 },
+    );
+
+    const element = document.getElementById(`lazy-${alt}`);
+    if (element) observer.observe(element);
+
+    return () => observer.disconnect();
+  }, [alt]);
+
+  return (
+    <div id={`lazy-${alt}`} className={containerClassName}>
+      {isInView && (
+        <>
+          {!isLoaded && (
+            <div className="absolute inset-0 bg-gradient-to-br from-gray-800 to-gray-900 animate-pulse rounded-3xl" />
+          )}
+          <img
+            src={src}
+            alt={alt}
+            className={`${className} ${isLoaded ? "opacity-100" : "opacity-0"} transition-opacity duration-500`}
+            onLoad={() => setIsLoaded(true)}
+            loading="lazy"
+          />
+        </>
+      )}
+    </div>
+  );
+};
 
 export default function AboutUs() {
   const values = [
@@ -217,10 +263,15 @@ export default function AboutUs() {
           whileInView={{ opacity: 1, x: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
-          className="relative flex justify-center p-16 border rounded-3xl bg-black/50 border-gray-800/50 backdrop-blur-xl"
+          className="relative overflow-hidden border rounded-3xl bg-black/50 border-gray-800/50 backdrop-blur-xl"
         >
           <div className="absolute inset-0 bg-gradient-to-br from-rose-500/10 to-orange-500/10 rounded-3xl blur-2xl" />
-          <Car className="relative w-32 h-32 text-rose-400 md:w-40 md:h-40" />
+          <LazyImage
+            src={CarYard1}
+            alt="Maguru Automobile Car Yard"
+            className="relative object-cover w-full h-full rounded-3xl"
+            containerClassName="relative w-full h-80 md:h-96"
+          />
         </motion.div>
       </section>
 
@@ -276,10 +327,15 @@ export default function AboutUs() {
           whileInView={{ opacity: 1, x: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
-          className="relative flex justify-center order-2 p-16 border rounded-3xl bg-black/50 border-gray-800/50 backdrop-blur-xl md:order-1"
+          className="relative order-2 overflow-hidden border rounded-3xl bg-black/50 border-gray-800/50 backdrop-blur-xl md:order-1"
         >
           <div className="absolute inset-0 bg-gradient-to-br from-orange-500/10 to-rose-500/10 rounded-3xl blur-2xl" />
-          <Users className="relative w-32 h-32 text-orange-400 md:w-40 md:h-40" />
+          <LazyImage
+            src={CarYard2}
+            alt="Maguru Automobile Services"
+            className="relative object-cover w-full h-full rounded-3xl"
+            containerClassName="relative w-full h-80 md:h-96"
+          />
         </motion.div>
 
         <motion.div
