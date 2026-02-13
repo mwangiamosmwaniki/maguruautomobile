@@ -3,9 +3,14 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../lib/AuthContext";
 import UsersPage from "./Users";
 import Logo from "../../assets/images/maguruLogo.png";
-
-// Update this to match your Laravel API URL
-const API_BASE = "http://localhost:8000/api";
+import {
+  fetchCars as fetchCarsFromFirebase,
+  createCar as createCarFirebase,
+  updateCar as updateCarFirebase,
+  deleteCar as deleteCarFirebase,
+  fetchDashboardStats,
+} from "../../lib/firebaseService";
+import { uploadMultipleToCloudinary } from "../../lib/cloudinaryService";
 
 const MAKES = [
   "Toyota",
@@ -677,6 +682,102 @@ const statusClass = (s) => {
 };
 
 // ─── Doughnut Chart Component ──────────────────────────────
+// ─── Pie Chart Component ─────────────────────────────────
+const PieChart = ({ data, colors, size = 200 }) => {
+  const total = data.reduce((sum, item) => sum + item.value, 0);
+  let currentAngle = -90;
+
+  const segments = data.map((item, index) => {
+    const percentage = (item.value / total) * 100;
+    const angle = (percentage / 100) * 360;
+    const startAngle = currentAngle;
+    const endAngle = currentAngle + angle;
+    currentAngle = endAngle;
+
+    const radius = size / 2 - 20;
+    const startX = size / 2 + radius * Math.cos((startAngle * Math.PI) / 180);
+    const startY = size / 2 + radius * Math.sin((startAngle * Math.PI) / 180);
+    const endX = size / 2 + radius * Math.cos((endAngle * Math.PI) / 180);
+    const endY = size / 2 + radius * Math.sin((endAngle * Math.PI) / 180);
+
+    const largeArcFlag = angle > 180 ? 1 : 0;
+
+    const path = `
+      M ${size / 2} ${size / 2}
+      L ${startX} ${startY}
+      A ${radius} ${radius} 0 ${largeArcFlag} 1 ${endX} ${endY}
+      Z
+    `;
+
+    return { path, color: colors[index % colors.length], percentage, ...item };
+  });
+
+  return (
+    <div
+      style={{
+        display: "flex",
+        alignItems: "center",
+        gap: "32px",
+        flexWrap: "wrap",
+      }}
+    >
+      <svg width={size} height={size} style={{ flexShrink: 0 }}>
+        {segments.map((segment, index) => (
+          <path
+            key={index}
+            d={segment.path}
+            fill={segment.color}
+            opacity={0.85}
+            style={{ transition: "opacity 0.2s", cursor: "pointer" }}
+            onMouseEnter={(e) => (e.target.style.opacity = 1)}
+            onMouseLeave={(e) => (e.target.style.opacity = 0.85)}
+          />
+        ))}
+      </svg>
+      <div style={{ flex: 1, minWidth: "200px" }}>
+        {segments.map((segment, index) => (
+          <div
+            key={index}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              padding: "10px 0",
+              borderBottom:
+                index < segments.length - 1
+                  ? "1px solid rgba(255,255,255,0.05)"
+                  : "none",
+            }}
+          >
+            <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+              <div
+                style={{
+                  width: "12px",
+                  height: "12px",
+                  borderRadius: "2px",
+                  background: segment.color,
+                }}
+              />
+              <span style={{ fontSize: "13px", color: "#ccc" }}>
+                {segment.label}
+              </span>
+            </div>
+            <span
+              style={{
+                fontSize: "13px",
+                fontWeight: "600",
+                color: segment.color,
+              }}
+            >
+              {segment.value}
+            </span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+// ─── Doughnut Chart Component ──────────────────────────────────
 const DoughnutChart = ({ data, colors, size = 200 }) => {
   const total = data.reduce((sum, item) => sum + item.value, 0);
   let currentAngle = -90;
@@ -875,7 +976,7 @@ export default function MaguruAutoDashboard() {
 
   const [cars, setCars] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [view, setView] = useState("list");
+  const [view, setView] = useState("dashboard");
   const [selected, setSelected] = useState(null);
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState("All");
@@ -939,35 +1040,14 @@ export default function MaguruAutoDashboard() {
   const fetchCars = useCallback(async () => {
     setLoading(true);
     try {
-      const headers = {
-        "Content-Type": "application/json",
-      };
-
-      if (token) {
-        headers["Authorization"] = `Bearer ${token}`;
-      }
-
-      const res = await fetch(`${API_BASE}/cars`, { headers });
-
-      if (res.status === 401) {
-        logout();
-        navigate("/admin/login");
-        showToast("Session expired. Please login again.", "error");
-        return;
-      }
-
-      if (!res.ok) {
-        throw new Error(`HTTP error! status: ${res.status}`);
-      }
-
-      const data = await res.json();
+      const data = await fetchCarsFromFirebase();
       setCars(Array.isArray(data) ? data : data.data || []);
     } catch (error) {
       console.error("Failed to fetch cars:", error);
       showToast("Failed to load cars from database", "error");
     }
     setLoading(false);
-  }, [showToast, token, logout, navigate]);
+  }, [showToast]);
 
   useEffect(() => {
     fetchCars();
@@ -1018,17 +1098,22 @@ export default function MaguruAutoDashboard() {
     setMobileMenuOpen(false);
   };
 
+  const [formErrors, setFormErrors] = useState({});
+
+  const validateForm = () => {
+    const errors = {};
+    if (!form.title) errors.title = "Title is required";
+    if (!form.make) errors.make = "Make is required";
+    if (!form.model) errors.model = "Model is required";
+    if (!form.price) errors.price = "Price is required";
+    if (imgPreviews.length < 2) errors.images = "Minimum 2 images required";
+    if (imgPreviews.length > 6) errors.images = "Maximum 6 images allowed";
+    setFormErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
   const handleSubmit = async () => {
-    if (!form.title || !form.make || !form.model || !form.price) {
-      showToast("Please fill required fields", "error");
-      return;
-    }
-    if (imgPreviews.length < 2) {
-      showToast("Please upload at least 2 car images", "error");
-      return;
-    }
-    if (imgPreviews.length > 6) {
-      showToast("Maximum 6 images allowed", "error");
+    if (!validateForm()) {
       return;
     }
     setSubmitting(true);
@@ -1053,37 +1138,25 @@ export default function MaguruAutoDashboard() {
 
     try {
       const isEdit = view === "edit";
-      const url = isEdit ? `${API_BASE}/cars/${form.id}` : `${API_BASE}/cars`;
-      const method = isEdit ? "PUT" : "POST";
 
-      const res = await authenticatedFetch(url, {
-        method,
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        },
-        body: JSON.stringify(payload),
-      });
-
-      const data = await res.json();
-
-      if (res.ok) {
+      try {
+        if (isEdit) {
+          await updateCarFirebase(form.id, payload);
+        } else {
+          await createCarFirebase(payload);
+        }
         await fetchCars();
         showToast(
           isEdit ? "Car updated successfully" : "Car added successfully",
         );
         setView("list");
-      } else {
-        const errorMsg = data.message || data.error || "Error saving car";
-        showToast(errorMsg, "error");
-      }
-    } catch (error) {
-      if (error.message !== "Unauthorized") {
+      } catch (error) {
         console.error("Submit error:", error);
-        showToast("Network error: Could not save car", "error");
+        showToast("Error saving car", "error");
       }
+    } finally {
+      setSubmitting(false);
     }
-    setSubmitting(false);
   };
 
   const handleUploadImages = async (files) => {
@@ -1100,34 +1173,25 @@ export default function MaguruAutoDashboard() {
       return;
     }
 
-    const uploadedImages = [];
-    let uploadCount = 0;
+    try {
+      showToast("Uploading images to Cloudinary...", "loading");
 
-    for (const file of newImages) {
-      try {
-        const preview = URL.createObjectURL(file);
-        uploadedImages.push(preview);
+      // Upload to Cloudinary
+      const cloudinaryUrls = await uploadMultipleToCloudinary(
+        newImages,
+        "maguruauto/cars",
+      );
 
-        const fd = new FormData();
-        fd.append("image", file);
-        const res = await authenticatedFetch(`${API_BASE}/cars/upload`, {
-          method: "POST",
-          body: fd,
-        });
-        const data = await res.json();
-        if (data.url) {
-          uploadedImages[uploadCount] = data.url;
-        }
-        uploadCount++;
-      } catch (error) {
-        if (error.message !== "Unauthorized") {
-          console.error("Upload error:", error);
-          showToast("Failed to upload one or more images", "error");
-        }
-      }
+      // Add to previews
+      setImgPreviews((prev) => [...prev, ...cloudinaryUrls]);
+      showToast(`Successfully uploaded ${newImages.length} images`, "success");
+    } catch (error) {
+      console.error("Upload error:", error);
+      showToast(
+        error.message || "Failed to upload images to Cloudinary",
+        "error",
+      );
     }
-
-    setImgPreviews((prev) => [...prev, ...uploadedImages]);
   };
 
   const removeImage = (index) => {
@@ -1136,27 +1200,406 @@ export default function MaguruAutoDashboard() {
 
   const deleteCar = async (id) => {
     try {
-      const res = await authenticatedFetch(`${API_BASE}/cars/${id}`, {
-        method: "DELETE",
-        headers: { Accept: "application/json" },
-      });
-
-      if (res.ok) {
-        await fetchCars();
-        setConfirmDelete(null);
-        if (view === "detail") setView("list");
-        showToast("Car deleted successfully");
-      } else {
-        const data = await res.json();
-        showToast(data.message || "Failed to delete car", "error");
-      }
+      await deleteCarFirebase(id);
+      await fetchCars();
+      setConfirmDelete(null);
+      if (view === "detail") setView("list");
+      showToast("Car deleted successfully");
     } catch (error) {
-      if (error.message !== "Unauthorized") {
-        console.error("Delete error:", error);
-        showToast("Network error: Could not delete car", "error");
-      }
+      console.error("Delete error:", error);
+      showToast("Failed to delete car", "error");
     }
   };
+
+  // Helper function to format date
+  const formatDate = (timestamp) => {
+    if (!timestamp) return "N/A";
+    try {
+      const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+      return date.toLocaleDateString("en-KE", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      });
+    } catch {
+      return "N/A";
+    }
+  };
+
+  // Get top 5 recent additions
+  const recentAdditions = cars
+    .sort((a, b) => {
+      const dateA = a.createdAt
+        ? a.createdAt.toDate
+          ? a.createdAt.toDate()
+          : new Date(a.createdAt)
+        : new Date(0);
+      const dateB = b.createdAt
+        ? b.createdAt.toDate
+          ? b.createdAt.toDate()
+          : new Date(b.createdAt)
+        : new Date(0);
+      return dateB - dateA;
+    })
+    .slice(0, 5);
+
+  // Get top 5 recent sales
+  const recentSales = cars
+    .filter((c) => c.status === "Sold")
+    .sort((a, b) => {
+      const dateA = a.updatedAt
+        ? a.updatedAt.toDate
+          ? a.updatedAt.toDate()
+          : new Date(a.updatedAt)
+        : new Date(0);
+      const dateB = b.updatedAt
+        ? b.updatedAt.toDate
+          ? b.updatedAt.toDate()
+          : new Date(b.updatedAt)
+        : new Date(0);
+      return dateB - dateA;
+    })
+    .slice(0, 5);
+
+  // Get top selling makes
+  const topMakes = [...new Set(cars.map((c) => c.make))]
+    .map((make) => ({
+      name: make,
+      count: cars.filter((c) => c.make === make).length,
+      sold: cars.filter((c) => c.make === make && c.status === "Sold").length,
+    }))
+    .sort((a, b) => b.sold - a.sold)
+    .slice(0, 5);
+
+  const renderDashboardOverview = () => (
+    <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
+      {/* Top Stats */}
+      {renderStats()}
+
+      {/* Main Grid */}
+      <div
+        style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px" }}
+      >
+        {/* Recent Additions */}
+        <div
+          style={{
+            backgroundColor: "#111318",
+            border: "1px solid #1e2128",
+            borderRadius: "12px",
+            padding: "20px",
+          }}
+        >
+          <h3
+            style={{
+              marginBottom: "16px",
+              fontSize: "16px",
+              fontWeight: "600",
+              color: "#fff",
+            }}
+          >
+            Recent Additions
+          </h3>
+          <div
+            style={{ display: "flex", flexDirection: "column", gap: "12px" }}
+          >
+            {recentAdditions.length === 0 ? (
+              <p
+                style={{
+                  color: "#666",
+                  textAlign: "center",
+                  padding: "20px 0",
+                }}
+              >
+                No cars yet
+              </p>
+            ) : (
+              recentAdditions.map((car, idx) => (
+                <div
+                  key={idx}
+                  style={{
+                    padding: "12px",
+                    backgroundColor: "#0c0e11",
+                    borderRadius: "8px",
+                    borderLeft: "3px solid #3b82f6",
+                    cursor: "pointer",
+                    transition: "background-color 0.2s",
+                  }}
+                  onMouseEnter={(e) =>
+                    (e.currentTarget.style.backgroundColor = "#15191f")
+                  }
+                  onMouseLeave={(e) =>
+                    (e.currentTarget.style.backgroundColor = "#0c0e11")
+                  }
+                  onClick={() => {
+                    setSelected(car.id);
+                    setView("detail");
+                  }}
+                >
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      marginBottom: "4px",
+                    }}
+                  >
+                    <span style={{ fontWeight: "600", fontSize: "13px" }}>
+                      {car.year} {car.make} {car.model}
+                    </span>
+                    <span style={{ fontSize: "12px", color: "#3b82f6" }}>
+                      KES {fmt(car.price)}
+                    </span>
+                  </div>
+                  <span style={{ fontSize: "11px", color: "#666" }}>
+                    {formatDate(car.createdAt)}
+                  </span>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+
+        {/* Recent Sales */}
+        <div
+          style={{
+            backgroundColor: "#111318",
+            border: "1px solid #1e2128",
+            borderRadius: "12px",
+            padding: "20px",
+          }}
+        >
+          <h3
+            style={{
+              marginBottom: "16px",
+              fontSize: "16px",
+              fontWeight: "600",
+              color: "#fff",
+            }}
+          >
+            Recent Sales
+          </h3>
+          <div
+            style={{ display: "flex", flexDirection: "column", gap: "12px" }}
+          >
+            {recentSales.length === 0 ? (
+              <p
+                style={{
+                  color: "#666",
+                  textAlign: "center",
+                  padding: "20px 0",
+                }}
+              >
+                No sales yet
+              </p>
+            ) : (
+              recentSales.map((car, idx) => (
+                <div
+                  key={idx}
+                  style={{
+                    padding: "12px",
+                    backgroundColor: "#0c0e11",
+                    borderRadius: "8px",
+                    borderLeft: "3px solid #10b981",
+                    cursor: "pointer",
+                    transition: "background-color 0.2s",
+                  }}
+                  onMouseEnter={(e) =>
+                    (e.currentTarget.style.backgroundColor = "#15191f")
+                  }
+                  onMouseLeave={(e) =>
+                    (e.currentTarget.style.backgroundColor = "#0c0e11")
+                  }
+                  onClick={() => {
+                    setSelected(car.id);
+                    setView("detail");
+                  }}
+                >
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      marginBottom: "4px",
+                    }}
+                  >
+                    <span style={{ fontWeight: "600", fontSize: "13px" }}>
+                      {car.year} {car.make} {car.model}
+                    </span>
+                    <span style={{ fontSize: "12px", color: "#10b981" }}>
+                      KES {fmt(car.price)}
+                    </span>
+                  </div>
+                  <span style={{ fontSize: "11px", color: "#666" }}>
+                    Sold: {formatDate(car.updatedAt)}
+                  </span>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Bottom Grid */}
+      <div
+        style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px" }}
+      >
+        {/* Top Selling Makes */}
+        <div
+          style={{
+            backgroundColor: "#111318",
+            border: "1px solid #1e2128",
+            borderRadius: "12px",
+            padding: "20px",
+          }}
+        >
+          <h3
+            style={{
+              marginBottom: "16px",
+              fontSize: "16px",
+              fontWeight: "600",
+              color: "#fff",
+            }}
+          >
+            Top Selling Makes
+          </h3>
+          <div
+            style={{ display: "flex", flexDirection: "column", gap: "12px" }}
+          >
+            {topMakes.length === 0 ? (
+              <p
+                style={{
+                  color: "#666",
+                  textAlign: "center",
+                  padding: "20px 0",
+                }}
+              >
+                No data yet
+              </p>
+            ) : (
+              topMakes.map((make, idx) => (
+                <div
+                  key={idx}
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                  }}
+                >
+                  <div>
+                    <div
+                      style={{
+                        fontWeight: "600",
+                        fontSize: "13px",
+                        marginBottom: "2px",
+                      }}
+                    >
+                      {make.name}
+                    </div>
+                    <div style={{ fontSize: "11px", color: "#666" }}>
+                      {make.sold} sold of {make.count}
+                    </div>
+                  </div>
+                  <div
+                    style={{
+                      width: "50px",
+                      height: "30px",
+                      backgroundColor: "#0c0e11",
+                      borderRadius: "6px",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      fontSize: "12px",
+                      fontWeight: "600",
+                      color: "#10b981",
+                    }}
+                  >
+                    {make.sold}
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+
+        {/* Inventory Status */}
+        <div
+          style={{
+            backgroundColor: "#111318",
+            border: "1px solid #1e2128",
+            borderRadius: "12px",
+            padding: "20px",
+          }}
+        >
+          <h3
+            style={{
+              marginBottom: "16px",
+              fontSize: "16px",
+              fontWeight: "600",
+              color: "#fff",
+            }}
+          >
+            Inventory Status
+          </h3>
+          <div
+            style={{ display: "flex", flexDirection: "column", gap: "14px" }}
+          >
+            {[
+              {
+                label: "Available",
+                value: cars.filter((c) => c.status === "Available").length,
+                color: "#3b82f6",
+              },
+              {
+                label: "Sold",
+                value: cars.filter((c) => c.status === "Sold").length,
+                color: "#10b981",
+              },
+              {
+                label: "Reserved",
+                value: cars.filter((c) => c.status === "Reserved").length,
+                color: "#f59e0b",
+              },
+              {
+                label: "On Hold",
+                value: cars.filter((c) => c.status === "On Hold").length,
+                color: "#ef4444",
+              },
+            ].map((status, idx) => (
+              <div
+                key={idx}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                }}
+              >
+                <div
+                  style={{ display: "flex", alignItems: "center", gap: "10px" }}
+                >
+                  <div
+                    style={{
+                      width: "10px",
+                      height: "10px",
+                      borderRadius: "50%",
+                      backgroundColor: status.color,
+                    }}
+                  />
+                  <span style={{ fontSize: "13px" }}>{status.label}</span>
+                </div>
+                <span
+                  style={{
+                    fontWeight: "600",
+                    fontSize: "13px",
+                    color: status.color,
+                  }}
+                >
+                  {status.value}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 
   const renderStats = () => (
     <div className="mgr-stats">
@@ -1178,11 +1621,20 @@ export default function MaguruAutoDashboard() {
   );
 
   const renderAnalytics = () => {
+    const totalRevenue = cars.reduce((sum, c) => sum + parseFloat(c.price), 0);
+    const avgPrice = cars.length > 0 ? totalRevenue / cars.length : 0;
+    const soldCount = cars.filter((c) => c.status === "Sold").length;
+    const conversionRate =
+      cars.length > 0 ? (soldCount / cars.length) * 100 : 0;
+    const availableCount = cars.filter((c) => c.status === "Available").length;
+
+    // Status Data
     const statusData = STATUSES.map((status) => ({
       label: status,
       value: cars.filter((c) => c.status === status).length,
-    }));
+    })).filter((s) => s.value > 0);
 
+    // Top Makes Data
     const makeData = [...new Set(cars.map((c) => c.make))]
       .map((make) => ({
         label: make,
@@ -1195,15 +1647,9 @@ export default function MaguruAutoDashboard() {
         ),
       }))
       .sort((a, b) => b.value - a.value)
-      .slice(0, 8);
+      .slice(0, 6);
 
-    const bodyTypeData = [...new Set(cars.map((c) => c.body_type))]
-      .map((type) => ({
-        label: type,
-        value: cars.filter((c) => c.body_type === type).length,
-      }))
-      .sort((a, b) => b.value - a.value);
-
+    // Price Range Data
     const priceRanges = [
       { range: "< 1M", min: 0, max: 1000000 },
       { range: "1M - 2M", min: 1000000, max: 2000000 },
@@ -1213,20 +1659,26 @@ export default function MaguruAutoDashboard() {
       { range: "> 8M", min: 8000000, max: Infinity },
     ];
 
-    const priceData = priceRanges.map((range) => ({
-      label: `KES ${range.range}`,
-      value: cars.filter((car) => {
-        const price = parseFloat(car.price);
-        return price >= range.min && price < range.max;
-      }).length,
-    }));
+    const priceData = priceRanges
+      .map((range) => ({
+        label: `KES ${range.range}`,
+        value: cars.filter((car) => {
+          const price = parseFloat(car.price);
+          return price >= range.min && price < range.max;
+        }).length,
+      }))
+      .filter((p) => p.value > 0);
 
-    const totalRevenue = cars.reduce((sum, c) => sum + parseFloat(c.price), 0);
-    const avgPrice = cars.length > 0 ? totalRevenue / cars.length : 0;
-    const soldCount = cars.filter((c) => c.status === "Sold").length;
-    const conversionRate =
-      cars.length > 0 ? (soldCount / cars.length) * 100 : 0;
+    // Fuel Type Data
+    const fuelData = [...new Set(cars.map((c) => c.fuel_type))]
+      .map((fuel) => ({
+        label: fuel,
+        value: cars.filter((c) => c.fuel_type === fuel).length,
+      }))
+      .sort((a, b) => b.value - a.value)
+      .filter((f) => f.value > 0);
 
+    // Color palette for charts
     const statusColors = ["#ef4444", "#3b82f6", "#10b981", "#f59e0b"];
     const makeColors = [
       "#e8174b",
@@ -1235,16 +1687,6 @@ export default function MaguruAutoDashboard() {
       "#5dcc8e",
       "#8b5cf6",
       "#ec4899",
-      "#06b6d4",
-      "#f97316",
-    ];
-    const bodyTypeColors = [
-      "#3b82f6",
-      "#8b5cf6",
-      "#06b6d4",
-      "#10b981",
-      "#f59e0b",
-      "#ef4444",
     ];
     const priceColors = [
       "#10b981",
@@ -1254,6 +1696,7 @@ export default function MaguruAutoDashboard() {
       "#ec4899",
       "#ef4444",
     ];
+    const fuelColors = ["#3b82f6", "#8b5cf6", "#06b6d4", "#10b981", "#f59e0b"];
 
     return (
       <div className="analytics-container">
@@ -1293,12 +1736,9 @@ export default function MaguruAutoDashboard() {
               border: "1px solid rgba(16, 185, 129, 0.2)",
             }}
           >
-            <div className="metric-label">Listed Vehicles</div>
-            <div className="metric-value">{cars.length}</div>
-            <div className="metric-change">
-              <Icon name="trendUp" size={14} />
-              {cars.filter((c) => c.status === "Available").length} available
-            </div>
+            <div className="metric-label">Conversion Rate</div>
+            <div className="metric-value">{conversionRate.toFixed(1)}%</div>
+            <div className="metric-change">{soldCount} vehicles sold</div>
           </div>
 
           <div
@@ -1309,55 +1749,94 @@ export default function MaguruAutoDashboard() {
               border: "1px solid rgba(168, 85, 247, 0.2)",
             }}
           >
-            <div className="metric-label">Conversion Rate</div>
-            <div className="metric-value">{conversionRate.toFixed(1)}%</div>
-            <div className="metric-change">{soldCount} vehicles sold</div>
+            <div className="metric-label">Available</div>
+            <div className="metric-value">{availableCount}</div>
+            <div className="metric-change">Ready to sell</div>
           </div>
         </div>
 
-        {/* Status Distribution - Doughnut Chart */}
-        <div className="chart-card">
-          <div className="chart-header">
-            <h3 className="chart-title">Vehicle Status Distribution</h3>
-            <p className="chart-subtitle">Current inventory status breakdown</p>
-          </div>
-          <DoughnutChart data={statusData} colors={statusColors} size={240} />
-        </div>
-
-        {/* Top Makes - Bar Chart */}
-        <div className="chart-card">
-          <div className="chart-header">
-            <h3 className="chart-title">Top Car Makes</h3>
-            <p className="chart-subtitle">
-              Most popular brands with average prices
-            </p>
-          </div>
-          <BarChart data={makeData} colors={makeColors} />
-        </div>
-
-        {/* Body Type & Price Range */}
+        {/* Charts Grid */}
         <div
           style={{
             display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
+            gridTemplateColumns: "repeat(auto-fit, minmax(380px, 1fr))",
             gap: "20px",
           }}
         >
+          {/* Status Distribution - Doughnut Chart */}
           <div className="chart-card">
             <div className="chart-header">
-              <h3 className="chart-title">Vehicle Type Distribution</h3>
-              <p className="chart-subtitle">Breakdown by body type</p>
+              <h3 className="chart-title">Vehicle Status</h3>
+              <p className="chart-subtitle">Distribution of inventory status</p>
             </div>
-            <BarChart data={bodyTypeData} colors={bodyTypeColors} />
+            {statusData.length > 0 ? (
+              <DoughnutChart
+                data={statusData}
+                colors={statusColors}
+                size={220}
+              />
+            ) : (
+              <p
+                style={{ color: "#666", textAlign: "center", padding: "40px" }}
+              >
+                No data available
+              </p>
+            )}
           </div>
 
+          {/* Top Makes - Bar Chart */}
           <div className="chart-card">
             <div className="chart-header">
-              <h3 className="chart-title">Price Range Distribution</h3>
+              <h3 className="chart-title">Top Brands</h3>
+              <p className="chart-subtitle">Most stocked car makes</p>
+            </div>
+            {makeData.length > 0 ? (
+              <BarChart data={makeData} colors={makeColors} />
+            ) : (
+              <p
+                style={{ color: "#666", textAlign: "center", padding: "40px" }}
+              >
+                No data available
+              </p>
+            )}
+          </div>
+        </div>
+
+        {/* Second Row Charts */}
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(380px, 1fr))",
+            gap: "20px",
+          }}
+        >
+          {/* Price Distribution - Pie Chart */}
+          <div className="chart-card">
+            <div className="chart-header">
+              <h3 className="chart-title">Price Distribution</h3>
               <p className="chart-subtitle">Vehicles by price bracket</p>
             </div>
-            <BarChart data={priceData} colors={priceColors} />
+            {priceData.length > 0 ? (
+              <PieChart data={priceData} colors={priceColors} size={220} />
+            ) : (
+              <p
+                style={{ color: "#666", textAlign: "center", padding: "40px" }}
+              >
+                No data available
+              </p>
+            )}
           </div>
+
+          {/* Fuel Type Distribution - Doughnut Chart */}
+          {fuelData.length > 0 && (
+            <div className="chart-card">
+              <div className="chart-header">
+                <h3 className="chart-title">Fuel Types</h3>
+                <p className="chart-subtitle">Vehicles by fuel type</p>
+              </div>
+              <DoughnutChart data={fuelData} colors={fuelColors} size={220} />
+            </div>
+          )}
         </div>
       </div>
     );
@@ -1656,38 +2135,98 @@ export default function MaguruAutoDashboard() {
               >
                 <label className="mgr-form-label">{f.label}</label>
                 {f.type === "select" ? (
-                  <select
-                    className="mgr-select-modal"
-                    value={form[f.key]}
-                    onChange={(e) =>
-                      setForm((p) => ({ ...p, [f.key]: e.target.value }))
-                    }
-                  >
-                    {f.options.map((o) => (
-                      <option key={o} value={o}>
-                        {o}
-                      </option>
-                    ))}
-                  </select>
+                  <div>
+                    <select
+                      className="mgr-select-modal"
+                      style={
+                        formErrors[f.key] ? { borderColor: "#dc3545" } : {}
+                      }
+                      value={form[f.key]}
+                      onChange={(e) => {
+                        setForm((p) => ({ ...p, [f.key]: e.target.value }));
+                        setFormErrors((p) => {
+                          const n = { ...p };
+                          delete n[f.key];
+                          return n;
+                        });
+                      }}
+                    >
+                      {f.options.map((o) => (
+                        <option key={o} value={o}>
+                          {o}
+                        </option>
+                      ))}
+                    </select>
+                    {formErrors[f.key] && (
+                      <p
+                        style={{
+                          color: "#dc3545",
+                          fontSize: 12,
+                          marginTop: 4,
+                        }}
+                      >
+                        {formErrors[f.key]}
+                      </p>
+                    )}
+                  </div>
                 ) : f.type === "textarea" ? (
-                  <textarea
-                    className="mgr-input"
-                    placeholder={f.placeholder}
-                    value={form[f.key]}
-                    onChange={(e) =>
-                      setForm((p) => ({ ...p, [f.key]: e.target.value }))
-                    }
-                  />
+                  <div>
+                    <textarea
+                      className="mgr-input"
+                      placeholder={f.placeholder}
+                      value={form[f.key]}
+                      onChange={(e) => {
+                        setForm((p) => ({ ...p, [f.key]: e.target.value }));
+                        setFormErrors((p) => {
+                          const n = { ...p };
+                          delete n[f.key];
+                          return n;
+                        });
+                      }}
+                    />
+                    {formErrors[f.key] && (
+                      <p
+                        style={{
+                          color: "#dc3545",
+                          fontSize: 12,
+                          marginTop: 4,
+                        }}
+                      >
+                        {formErrors[f.key]}
+                      </p>
+                    )}
+                  </div>
                 ) : (
-                  <input
-                    className="mgr-input"
-                    type={f.type}
-                    placeholder={f.placeholder}
-                    value={form[f.key]}
-                    onChange={(e) =>
-                      setForm((p) => ({ ...p, [f.key]: e.target.value }))
-                    }
-                  />
+                  <div>
+                    <input
+                      className="mgr-input"
+                      type={f.type}
+                      placeholder={f.placeholder}
+                      style={
+                        formErrors[f.key] ? { borderColor: "#dc3545" } : {}
+                      }
+                      value={form[f.key]}
+                      onChange={(e) => {
+                        setForm((p) => ({ ...p, [f.key]: e.target.value }));
+                        setFormErrors((p) => {
+                          const n = { ...p };
+                          delete n[f.key];
+                          return n;
+                        });
+                      }}
+                    />
+                    {formErrors[f.key] && (
+                      <p
+                        style={{
+                          color: "#dc3545",
+                          fontSize: 12,
+                          marginTop: 4,
+                        }}
+                      >
+                        {formErrors[f.key]}
+                      </p>
+                    )}
+                  </div>
                 )}
               </div>
             ))}
@@ -1698,6 +2237,17 @@ export default function MaguruAutoDashboard() {
               <p style={{ color: "#888", fontSize: 12, marginBottom: 12 }}>
                 Upload 2-6 images of your car
               </p>
+              {formErrors.images && (
+                <p
+                  style={{
+                    color: "#dc3545",
+                    fontSize: 12,
+                    marginBottom: 12,
+                  }}
+                >
+                  {formErrors.images}
+                </p>
+              )}
 
               <div
                 className="mgr-upload-area"
@@ -1942,7 +2492,7 @@ export default function MaguruAutoDashboard() {
             ].map((n) => (
               <div
                 key={n.id}
-                className={`mgr-nav-item ${((view === "list" || view === "detail" || view === "add" || view === "edit") && n.id === "inventory") || view === n.id ? "active" : ""}`}
+                className={`mgr-nav-item ${view === n.id || ((view === "list" || view === "detail" || view === "add" || view === "edit") && n.id === "inventory") ? "active" : ""}`}
                 onClick={() => {
                   if (n.id === "inventory") setView("list");
                   else setView(n.id);
@@ -1974,26 +2524,30 @@ export default function MaguruAutoDashboard() {
           <div className="mgr-header">
             <div className="mgr-header-left">
               <h1>
-                {view === "detail"
-                  ? "Car Details"
-                  : view === "add"
-                    ? "Add Car"
-                    : view === "edit"
-                      ? "Edit Car"
-                      : view === "analytics"
-                        ? "Analytics & Insights"
-                        : view === "users"
-                          ? "Users Management"
-                          : "Inventory"}
+                {view === "dashboard"
+                  ? "Dashboard Overview"
+                  : view === "detail"
+                    ? "Car Details"
+                    : view === "add"
+                      ? "Add Car"
+                      : view === "edit"
+                        ? "Edit Car"
+                        : view === "analytics"
+                          ? "Analytics & Insights"
+                          : view === "users"
+                            ? "Users Management"
+                            : "Inventory"}
               </h1>
               <p>
-                {view === "list"
-                  ? `${filtered.length} car${filtered.length !== 1 ? "s" : ""} found`
-                  : view === "analytics"
-                    ? "Business performance metrics"
-                    : view === "users"
-                      ? "Manage admin users"
-                      : "Manage your car listings"}
+                {view === "dashboard"
+                  ? "Quick overview of your business"
+                  : view === "list"
+                    ? `${filtered.length} car${filtered.length !== 1 ? "s" : ""} found`
+                    : view === "analytics"
+                      ? "Business performance metrics"
+                      : view === "users"
+                        ? "Manage admin users"
+                        : "Manage your car listings"}
               </p>
             </div>
             <div
@@ -2076,6 +2630,7 @@ export default function MaguruAutoDashboard() {
           )}
 
           {/* Views */}
+          {view === "dashboard" && renderDashboardOverview()}
           {view === "list" && renderTable()}
           {view === "detail" && renderDetail()}
           {(view === "add" || view === "edit") && renderForm()}

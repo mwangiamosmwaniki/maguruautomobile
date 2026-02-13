@@ -17,6 +17,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "../ui/sheet";
+import { fetchCars as fetchCarsFromFirebase } from "../../../lib/firebaseService";
 
 export default function CarFilters({
   filters,
@@ -31,37 +32,43 @@ export default function CarFilters({
   const [conditions, setConditions] = useState([]);
   const [priceRanges, setPriceRanges] = useState([]);
 
-  // Fetch unique filter values from backend
+  // Fetch unique filter values from Firebase
   useEffect(() => {
     const fetchFilters = async () => {
       try {
-        const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
-        const response = await fetch(`${API_URL}/api/cars`);
-        if (!response.ok) throw new Error("Failed to fetch cars");
-        const data = await response.json();
+        const data = await fetchCarsFromFirebase();
+        if (!Array.isArray(data) || data.length === 0) {
+          console.warn("No car data available");
+          return;
+        }
 
         // Extract and sort unique values for each filter
-        const uniqueMakes = [...new Set(data.map((car) => car.make))].sort();
-        const uniqueYears = [...new Set(data.map((car) => car.year))].sort(
-          (a, b) => b - a,
-        );
+        const uniqueMakes = [
+          ...new Set(data.map((car) => car.make).filter(Boolean)),
+        ].sort();
+        const uniqueYears = [
+          ...new Set(data.map((car) => car.year).filter(Boolean)),
+        ].sort((a, b) => b - a);
         const uniqueBodyTypes = [
-          ...new Set(data.map((car) => car.body_type)),
+          ...new Set(data.map((car) => car.body_type).filter(Boolean)),
         ].sort();
         const uniqueTransmissions = [
-          ...new Set(data.map((car) => car.transmission)),
+          ...new Set(data.map((car) => car.transmission).filter(Boolean)),
         ].sort();
         const uniqueFuelTypes = [
-          ...new Set(data.map((car) => car.fuel_type)),
+          ...new Set(data.map((car) => car.fuel_type).filter(Boolean)),
         ].sort();
         const uniqueConditions = [
-          ...new Set(data.map((car) => car.condition)),
+          ...new Set(data.map((car) => car.condition).filter(Boolean)),
         ].sort();
 
         // Calculate price ranges based on min/max prices
-        const prices = data.map((car) => car.price).sort((a, b) => a - b);
-        const minPrice = prices[0];
-        const maxPrice = prices[prices.length - 1];
+        const prices = data
+          .map((car) => car.price)
+          .filter((p) => p)
+          .sort((a, b) => a - b);
+        const minPrice = prices[0] || 0;
+        const maxPrice = prices[prices.length - 1] || 0;
 
         // Helper function to format price to M (million)
         const formatPrice = (price) => {

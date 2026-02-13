@@ -4,6 +4,9 @@ import { Lock, Mail, AlertCircle, Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
 import { useAuth } from "../lib/AuthContext";
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { auth } from "../firebase";
+import { fetchUserFromFirebase } from "../lib/firebaseService";
 
 export default function AdminLogin() {
   const navigate = useNavigate();
@@ -15,8 +18,6 @@ export default function AdminLogin() {
     password: "",
   });
   const [error, setError] = useState(null);
-
-  const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
   const handleChange = (e) => {
     setFormData({
@@ -32,29 +33,30 @@ export default function AdminLogin() {
     setError(null);
 
     try {
-      const response = await fetch(`${API_URL}/api/auth/login`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(formData),
-      });
+      // Sign in with Firebase Authentication
+      const userCredential = await signInWithEmailAndPassword(
+        auth,
+        formData.email,
+        formData.password,
+      );
 
-      const data = await response.json();
+      // Get the token
+      const token = await userCredential.user.getIdToken();
 
-      if (!response.ok) {
-        setError(data.message || "Login failed");
-        toast.error(data.message || "Login failed");
-        return;
+      // Fetch user data from Firestore
+      const userData = await fetchUserFromFirebase(userCredential.user.uid);
+
+      if (!userData) {
+        throw new Error("User not found in database");
       }
 
       // Store token and user in localStorage
-      localStorage.setItem("authToken", data.token);
-      localStorage.setItem("user", JSON.stringify(data.user));
+      localStorage.setItem("authToken", token);
+      localStorage.setItem("user", JSON.stringify(userData));
 
       // Update Auth Context
-      setToken(data.token);
-      setUser(data.user);
+      setToken(token);
+      setUser(userData);
 
       toast.success("Login successful!");
 
@@ -62,7 +64,10 @@ export default function AdminLogin() {
       const from = location.state?.from?.pathname || "/admin/dashboard";
       navigate(from);
     } catch (err) {
-      const errorMsg = err.message || "An error occurred";
+      const errorMsg =
+        err.code === "auth/invalid-credential"
+          ? "Invalid email or password"
+          : err.message || "Login failed";
       setError(errorMsg);
       toast.error(errorMsg);
     } finally {

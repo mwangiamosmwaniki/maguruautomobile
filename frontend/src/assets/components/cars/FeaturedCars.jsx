@@ -4,6 +4,7 @@ import { Button } from "../ui/button";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "../../../lib/utils";
+import { fetchCars as fetchCarsFromFirebase } from "../../../lib/firebaseService";
 import CarCard from "./CarCard";
 
 export default function FeaturedCars() {
@@ -13,12 +14,9 @@ export default function FeaturedCars() {
   useEffect(() => {
     const fetchFeaturedCars = async () => {
       try {
-        const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
-        const response = await fetch(`${API_URL}/api/cars`);
-        if (!response.ok) throw new Error("Failed to fetch cars");
-        const data = await response.json();
+        const data = await fetchCarsFromFirebase();
         // Display only the first 4 cars as featured
-        setCars(data.slice(0, 4));
+        setCars(Array.isArray(data) ? data.slice(0, 4) : []);
       } catch (error) {
         console.error("Error fetching featured cars:", error);
         setCars([]);

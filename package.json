@@ -1,10 +1,18 @@
 {
-  "dependencies": {
-    "@radix-ui/react-select": "^2.2.6",
-    "express": "^5.2.1",
-    "framer-motion": "^12.29.2",
-    "lucide-react": "^0.563.0",
-    "mongod": "^2.0.0",
-    "react-router-dom": "^7.13.0"
+  "name": "maguruauto",
+  "version": "1.0.0",
+  "description": "Maguru Auto - Car Management System",
+  "private": true,
+  "scripts": {
+    "seed:admin": "node seed-admin.js",
+    "frontend": "cd frontend && npm run dev",
+    "frontend:build": "cd frontend && npm run build",
+    "frontend:lint": "cd frontend && npm run lint"
+  },
+  "devDependencies": {
+    "firebase-admin": "^12.7.0"
+  },
+  "engines": {
+    "node": ">=16.0.0"
   }
 }

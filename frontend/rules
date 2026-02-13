@@ -1,0 +1,27 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Allow authenticated users to read and write their own data
+    match /users/{userId} {
+      allow read, write: if request.auth.uid == userId;
+    }
+    
+    // Allow anyone to read cars
+    match /cars/{document=**} {
+      allow read: if true;
+    }
+    
+    // Allow authenticated users to create and update cars
+    match /cars/{document=**} {
+      allow create: if request.auth != null;
+      allow update: if request.auth != null;
+      allow delete: if request.auth != null;
+    }
+    
+    // Allow authenticated users to write inquiries
+    match /inquiries/{document=**} {
+      allow create: if request.auth != null;
+      allow read: if request.auth != null;
+    }
+  }
+}

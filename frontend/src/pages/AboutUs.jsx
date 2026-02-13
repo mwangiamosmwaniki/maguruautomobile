@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 import { motion } from "framer-motion";
 import CarYard1 from "../assets/images/CarYard1.png";
-import CarYard2 from "../assets/images/CarYard3.png";
+import CarYard2 from "../assets/images/CarYard2.png";
 
 // Lazy Loading Image Component
 const LazyImage = ({ src, alt, className, containerClassName }) => {
@@ -175,7 +175,6 @@ export default function AboutUs() {
           transition={{ duration: 0.7 }}
         >
           <span className="inline-flex items-center gap-2 px-4 py-2 mb-6 text-sm font-medium border rounded-full bg-gradient-to-r from-rose-500/10 to-orange-500/10 border-rose-500/20 backdrop-blur-sm">
-            <Sparkles size={16} className="text-rose-400" />
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-rose-400 to-orange-400">
               Premium Auto Marketplace
             </span>
