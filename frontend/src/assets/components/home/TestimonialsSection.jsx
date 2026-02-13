@@ -18,7 +18,7 @@ const testimonials = [
     image:
       "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop",
     content:
-      "Sold my fleet vehicles through this platform. The professionalism and speed of the transactions exceeded my expectations. Highly recommend!",
+      "Purchased my fleet vehicle through this platform. The professionalism and speed of the transactions exceeded my expectations. Highly recommend!",
     rating: 5,
   },
   {
@@ -34,32 +34,32 @@ const testimonials = [
 
 export default function TestimonialsSection() {
   return (
-    <section className="py-20 bg-gradient-to-br from-slate-200 to-slate-400 relative overflow-hidden">
+    <section className="relative py-20 overflow-hidden bg-gradient-to-br from-slate-200 to-slate-400">
       {/* Decorative elements */}
-      <div className="absolute top-0 left-0 w-96 h-96 bg-rose-500/10 rounded-full blur-3xl" />
-      <div className="absolute bottom-0 right-0 w-96 h-96 bg-orange-500/10 rounded-full blur-3xl" />
+      <div className="absolute top-0 left-0 rounded-full w-96 h-96 bg-rose-500/10 blur-3xl" />
+      <div className="absolute bottom-0 right-0 rounded-full w-96 h-96 bg-orange-500/10 blur-3xl" />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
+      <div className="relative px-4 mx-auto max-w-7xl sm:px-6 lg:px-8">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.5 }}
-          className="text-center mb-16"
+          className="mb-16 text-center"
         >
           <span className="inline-block px-4 py-1.5 bg-white/60 text-rose-600 rounded-full text-sm font-medium mb-4">
             Customer Stories
           </span>
-          <h2 className="text-3xl md:text-4xl font-bold text-black mb-4">
+          <h2 className="mb-4 text-3xl font-bold text-black md:text-4xl">
             Loved by Thousands of Customers
           </h2>
-          <p className="text-lg text-slate-700 max-w-2xl mx-auto">
+          <p className="max-w-2xl mx-auto text-lg text-slate-700">
             Don't just take our word for it. Here's what our community has to
             say.
           </p>
         </motion.div>
 
-        <div className="grid md:grid-cols-3 gap-8">
+        <div className="grid gap-8 md:grid-cols-3">
           {testimonials.map((testimonial, index) => (
             <motion.div
               key={testimonial.name}
@@ -68,10 +68,10 @@ export default function TestimonialsSection() {
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: index * 0.1 }}
             >
-              <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-8 border border-black/10 h-full hover:bg-black/10 transition-colors duration-300">
-                <Quote className="w-10 h-10 text-rose-700/50 mb-6" />
+              <div className="h-full p-8 transition-colors duration-300 border bg-white/5 backdrop-blur-sm rounded-2xl border-black/10 hover:bg-black/10">
+                <Quote className="w-10 h-10 mb-6 text-rose-700/50" />
 
-                <p className="text-slate-800 leading-relaxed mb-6">
+                <p className="mb-6 leading-relaxed text-slate-800">
                   "{testimonial.content}"
                 </p>
 
@@ -88,7 +88,7 @@ export default function TestimonialsSection() {
                   <img
                     src={testimonial.image}
                     alt={testimonial.name}
-                    className="w-12 h-12 rounded-full object-cover ring-2 ring-white/20"
+                    className="object-cover w-12 h-12 rounded-full ring-2 ring-white/20"
                   />
                   <div>
                     <h4 className="font-semibold text-black">

@@ -28,7 +28,7 @@ const heroSlides = [
   {
     image:
       "https://images.unsplash.com/photo-1606611013016-969c19ba27bb?w=800&q=80",
-    badge: "🏆 Most Popular SUV",
+    badge: "Most Popular SUV",
     title: "Premium SUVs",
     subtitle: "Toyota Land Cruiser & More",
     description:
@@ -40,7 +40,7 @@ const heroSlides = [
   {
     image:
       "https://nar.media.audi.com/is/image/audinar/country/us/en/assets/pct/MY25---A5---Exterior---Front-Profile---Driving---3-TILE-ONE-592x925.jpg",
-    badge: "⭐ Luxury Collection",
+    badge: "Luxury Collection",
     title: "German Engineering",
     subtitle: "Mercedes-Benz, BMW & Audi",
     description:
@@ -52,7 +52,7 @@ const heroSlides = [
   {
     image:
       "https://www.mazdausa.com/siteassets/vehicles/2026/cx-30/04_btv/010_special-offers-refresh/a_desktop/cx30-desktop.png?w=480%20480w",
-    badge: "🔥 Popular Choice",
+    badge: "Popular Choice",
     title: "Mazda CX-5 Crossover",
     subtitle: "Stylish & Practical",
     description:
@@ -64,7 +64,7 @@ const heroSlides = [
   {
     image:
       "https://images.unsplash.com/photo-1556189250-72ba954cfc2b?w=800&q=80",
-    badge: "💎 Executive Choice",
+    badge: "Executive Choice",
     title: "Business Vehicles",
     subtitle: "BMW X Series & Executive Sedans",
     description:

@@ -13,6 +13,7 @@ import { Tabs, TabsList, TabsTrigger } from "../assets/components/ui/tabs";
 import CarCard from "../assets/components/cars/CarCard";
 import CarFilters from "../assets/components/cars/CarFilters";
 import { motion } from "framer-motion";
+import { fetchCars as fetchCarsFromFirebase } from "../lib/firebaseService";
 
 export default function Cars() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -27,17 +28,12 @@ export default function Cars() {
 
   const allowedConditions = ["Foreign Used", "Locally Used"];
 
-  // Fetch cars data
+  // Fetch cars data from Firebase
   useEffect(() => {
     const fetchCars = async () => {
       setIsLoading(true);
       try {
-        const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
-        const response = await fetch(`${API_URL}/api/cars`);
-        if (!response.ok) {
-          throw new Error(`API error: ${response.status}`);
-        }
-        const data = await response.json();
+        const data = await fetchCarsFromFirebase();
         setCars(Array.isArray(data) ? data : []);
 
         // Extract unique conditions from database and filter to allowed ones
@@ -155,10 +151,8 @@ export default function Cars() {
             transition={{ duration: 0.7, ease: "easeOut" }}
             className="space-y-6"
           >
-            {/* Title with Gradient */}
             <div className="space-y-3 text-center">
               <div className="inline-flex items-center gap-2 px-3 py-1.5 mb-3 text-xs font-medium rounded-full bg-gradient-to-r from-rose-500/10 to-orange-500/10 border border-rose-500/20 backdrop-blur-sm">
-                <Sparkles className="w-3.5 h-3.5 text-rose-400" />
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-rose-400 to-orange-400">
                   Premium Collection
                 </span>
@@ -179,10 +173,8 @@ export default function Cars() {
         </div>
       </div>
 
-      {/* Main Content */}
       <div className="relative px-4 py-8 mx-auto max-w-7xl sm:px-6 lg:px-8">
         <div className="flex flex-col gap-6 lg:flex-row">
-          {/* Sidebar Filters */}
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
@@ -198,16 +190,13 @@ export default function Cars() {
             </div>
           </motion.div>
 
-          {/* Cars Grid */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.3 }}
             className="flex-1 min-w-0"
           >
-            {/* Enhanced Toolbar */}
             <div className="p-4 mb-6 space-y-4 border rounded-2xl bg-black/50 backdrop-blur-xl border-gray-800/50">
-              {/* Search Bar Row */}
               <div className="relative group">
                 <div className="absolute inset-0 transition-all duration-300 opacity-0 bg-gradient-to-r from-rose-500/20 to-orange-500/20 rounded-xl blur-xl group-hover:blur-2xl group-hover:opacity-100" />
                 <div className="relative flex gap-2">
@@ -227,9 +216,7 @@ export default function Cars() {
                 </div>
               </div>
 
-              {/* Controls Row */}
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                {/* Left: Tabs */}
                 <Tabs value={activeTab} onValueChange={setActiveTab}>
                   <TabsList className="inline-flex w-full p-1 border rounded-lg bg-black/50 backdrop-blur-xl border-gray-700/50 sm:w-auto">
                     <TabsTrigger

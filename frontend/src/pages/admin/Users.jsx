@@ -2,10 +2,15 @@ import React, { useState, useEffect } from "react";
 import { Plus, Trash2, Edit2, X, Check } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "../../lib/AuthContext";
+import {
+  fetchUsers as fetchUsersFromFirebase,
+  createUser as createUserFirebase,
+  updateUser as updateUserFirebase,
+  deleteUser as deleteUserFirebase,
+} from "../../lib/firebaseService";
 
 const UsersPage = () => {
   const { token } = useAuth();
-  const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -18,34 +23,12 @@ const UsersPage = () => {
   });
   const [submitting, setSubmitting] = useState(false);
 
-  // Authenticated fetch helper
-  const authenticatedFetch = async (url, options = {}) => {
-    const headers = {
-      ...options.headers,
-      Authorization: `Bearer ${token}`,
-    };
-    const response = await fetch(url, { ...options, headers });
-
-    if (response.status === 401) {
-      toast.error("Session expired. Please login again.");
-      window.location.href = "/admin/login";
-      throw new Error("Unauthorized");
-    }
-    return response;
-  };
-
-  // Fetch users
+  // Fetch users from Firebase
   const fetchUsers = async () => {
     try {
       setLoading(true);
-      const response = await authenticatedFetch(`${API_URL}/api/users`);
-      const data = await response.json();
-
-      if (response.ok) {
-        setUsers(data.users);
-      } else {
-        toast.error(data.message || "Failed to fetch users");
-      }
+      const data = await fetchUsersFromFirebase();
+      setUsers(data || []);
     } catch (err) {
       console.error("Error fetching users:", err);
       toast.error("Failed to fetch users");
@@ -74,11 +57,6 @@ const UsersPage = () => {
 
     try {
       setSubmitting(true);
-      const url = editingId
-        ? `${API_URL}/api/users/${editingId}`
-        : `${API_URL}/api/users`;
-
-      const method = editingId ? "PUT" : "POST";
       const payload = { ...formData };
 
       // Only include password if provided
@@ -86,25 +64,18 @@ const UsersPage = () => {
         delete payload.password;
       }
 
-      const response = await authenticatedFetch(url, {
-        method,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        toast.success(
-          data.message || (editingId ? "User updated" : "User created"),
-        );
-        setFormData({ name: "", email: "", password: "" });
-        setEditingId(null);
-        setShowForm(false);
-        fetchUsers();
+      if (editingId) {
+        await updateUserFirebase(editingId, payload);
+        toast.success("User updated");
       } else {
-        toast.error(data.message || "Operation failed");
+        await createUserFirebase(payload);
+        toast.success("User created");
       }
+
+      setFormData({ name: "", email: "", password: "" });
+      setEditingId(null);
+      setShowForm(false);
+      fetchUsers();
     } catch (err) {
       console.error("Error:", err);
       toast.error("An error occurred");
@@ -125,19 +96,9 @@ const UsersPage = () => {
     if (!confirm("Are you sure you want to delete this user?")) return;
 
     try {
-      const response = await authenticatedFetch(
-        `${API_URL}/api/users/${userId}`,
-        { method: "DELETE" },
-      );
-
-      const data = await response.json();
-
-      if (response.ok) {
-        toast.success("User deleted");
-        fetchUsers();
-      } else {
-        toast.error(data.message || "Failed to delete user");
-      }
+      await deleteUserFirebase(userId);
+      toast.success("User deleted");
+      fetchUsers();
     } catch (err) {
       console.error("Error:", err);
       toast.error("Failed to delete user");

@@ -32,6 +32,7 @@ import { Link } from "react-router-dom";
 import { createPageUrl } from "../lib/utils";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
+import { fetchCarById, createInquiry } from "../lib/firebaseService";
 
 export default function CarDetails() {
   const { id: carId } = useParams();
@@ -59,12 +60,10 @@ export default function CarDetails() {
 
     const fetchCar = async () => {
       try {
-        const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
-        const response = await fetch(`${API_URL}/api/cars/${carId}`);
-        if (!response.ok) {
-          throw new Error(`Car not found (${response.status})`);
+        const data = await fetchCarById(carId);
+        if (!data) {
+          throw new Error("Car not found");
         }
-        const data = await response.json();
         setCar(data);
         setError(null);
       } catch (err) {
@@ -88,30 +87,20 @@ export default function CarDetails() {
     }
 
     try {
-      const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
-      const response = await fetch(`${API_URL}/api/enquiries`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          name: inquiry.name,
-          email: inquiry.email,
-          phone: inquiry.phone,
-          message: inquiry.message,
-          car_id: carId || null,
-        }),
+      // Save inquiry to Firestore - Cloud Function will send email automatically
+      await createInquiry({
+        name: inquiry.name,
+        email: inquiry.email,
+        phone: inquiry.phone,
+        message: inquiry.message,
+        carId: carId || null,
+        carTitle: car?.title || "Unknown Car",
+        adminEmail: "mwangiamos703@gmail.com",
       });
 
-      const data = await response.json();
-
-      if (response.ok) {
-        toast.success("Inquiry sent successfully! We will contact you soon.");
-        setDialogOpen(false);
-        setInquiry({ name: "", email: "", phone: "", message: "" });
-      } else {
-        toast.error(data.message || "Failed to send inquiry");
-      }
+      toast.success("Inquiry sent successfully! We will contact you soon.");
+      setDialogOpen(false);
+      setInquiry({ name: "", email: "", phone: "", message: "" });
     } catch (error) {
       console.error("Error submitting inquiry:", error);
       toast.error("Failed to send inquiry. Please try again.");
