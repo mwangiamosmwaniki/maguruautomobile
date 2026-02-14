@@ -29,22 +29,14 @@ exports.sendInquiryNotifications = functions.firestore
       const inquiry = snap.data();
       const inquiryId = context.params.inquiryId;
 
-      // Get admin email and phone from inquiry or Firestore settings
-      const adminEmail = inquiry.adminEmail || 
-        (await admin
-          .firestore()
-          .collection("settings")
-          .doc("admin")
-          .get()
-          .then(doc => doc.data()?.email)) ||
-        process.env.ADMIN_EMAIL;
-      
+      // Get admin email and phone from Firestore
       const adminDoc = await admin
         .firestore()
         .collection("settings")
         .doc("admin")
         .get();
       const adminData = adminDoc.data() || {};
+      const adminEmail = adminData.email || process.env.ADMIN_EMAIL;
       const adminPhone = adminData.whatsappPhone || process.env.ADMIN_PHONE;
 
       // Send Email to Admin
