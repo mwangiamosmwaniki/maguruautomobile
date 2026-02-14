@@ -82,9 +82,7 @@ export default function HeroSection({ onSearch }) {
   const [priceRange, setPriceRange] = useState("");
   const [currentSlide, setCurrentSlide] = useState(0);
 
-  // Preload carousel images and auto slide effect
   useEffect(() => {
-    // Preload all carousel images for smooth transitions
     heroSlides.forEach((slide) => {
       const img = new Image();
       img.src = slide.image;
