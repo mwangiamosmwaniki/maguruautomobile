@@ -68,13 +68,15 @@ export default function Layout({ children, currentPageName }) {
               to={createPageUrl("Home")}
               className="flex items-center gap-2"
             >
-              <img
-                src={Logo}
-                alt="Maguru Automobile Logo"
-                className="object-contain rounded-lg w-18 h-14"
-              />
+              <div className="overflow-hidden rounded-lg w-16 h-10 sm:w-24 sm:h-14">
+                <img
+                  src={Logo}
+                  alt="Maguru Automobile Logo"
+                  className="object-contain w-full h-full"
+                />
+              </div>
 
-              <span className="text-xl font-bold text-transparent bg-gradient-to-r from-pink-500 to-orange-500 bg-clip-text">
+              <span className="text-lg sm:text-xl font-bold text-transparent bg-gradient-to-r from-pink-500 to-orange-500 bg-clip-text hidden sm:inline">
                 Maguru Automobile
               </span>
             </Link>
@@ -162,15 +164,13 @@ export default function Layout({ children, currentPageName }) {
                 to={createPageUrl("Home")}
                 className="flex items-center gap-2 mb-6"
               >
-                <div className="flex items-center justify-center overflow-hidden rounded-lg w-18 h-14">
+                <div className="flex items-center justify-center overflow-hidden rounded-lg w-16 h-10 sm:w-24 sm:h-14">
                   <img
                     src={Logo}
                     alt="Maguru Logo"
                     className="object-contain w-full h-full"
                   />
                 </div>
-
-                {/* <span className="text-xl font-bold">Maguru Automobile</span> */}
               </Link>
 
               <p className="mb-6 text-sm leading-relaxed text-slate-400">
@@ -248,37 +248,14 @@ export default function Layout({ children, currentPageName }) {
             <div>
               <h4 className="mb-4 font-semibold text-white">Services</h4>
               <ul className="space-y-3">
-                {/* <li>
-                  <a
-                    href="#"
-                    className="text-sm transition-colors text-slate-400 hover:text-white"
-                  >
-                    Car Financing
-                  </a>
-                </li> */}
-                <li>
-                  <a
-                    href="#"
-                    className="text-sm transition-colors text-slate-400 hover:text-white"
-                  >
-                    Car Inspection
-                  </a>
+                <li className="text-sm transition-colors text-slate-400 hover:text-white">
+                  Car Inspection
                 </li>
-                <li>
-                  <a
-                    href="#"
-                    className="text-sm transition-colors text-slate-400 hover:text-white"
-                  >
-                    Car Insurance
-                  </a>
+                <li className="text-sm transition-colors text-slate-400 hover:text-white">
+                  Car Insurance
                 </li>
-                <li>
-                  <a
-                    href="#"
-                    className="text-sm transition-colors text-slate-400 hover:text-white"
-                  >
-                    Car Valuation
-                  </a>
+                <li className="text-sm transition-colors text-slate-400 hover:text-white">
+                  Car Valuation
                 </li>
               </ul>
             </div>
