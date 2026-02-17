@@ -19,11 +19,11 @@ const testimonials = [
       "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop",
     content:
       "Purchased my fleet vehicle through this platform. The professionalism and speed of the transactions exceeded my expectations. Highly recommend!",
-    rating: 5,
+    rating: 4,
   },
   {
     name: "Mary Njeri",
-    role: "Regular Customer",
+    role: "Returning Customer",
     image:
       "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&h=150&fit=crop",
     content:
@@ -79,17 +79,12 @@ export default function TestimonialsSection() {
                   {[...Array(testimonial.rating)].map((_, i) => (
                     <Star
                       key={i}
-                      className="w-4 h-4 fill-amber-400 text-amber-900"
+                      className="w-4 h-4 fill-amber-400 text-amber-500"
                     />
                   ))}
                 </div>
 
                 <div className="flex items-center gap-4">
-                  <img
-                    src={testimonial.image}
-                    alt={testimonial.name}
-                    className="object-cover w-12 h-12 rounded-full ring-2 ring-white/20"
-                  />
                   <div>
                     <h4 className="font-semibold text-black">
                       {testimonial.name}
