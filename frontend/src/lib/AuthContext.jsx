@@ -1,17 +1,45 @@
-import React, { createContext, useState, useEffect, useContext } from "react";
-import { onAuthStateChanged } from "firebase/auth";
+import React, {
+  createContext,
+  useState,
+  useEffect,
+  useRef,
+  useContext,
+} from "react";
+import { onAuthStateChanged, signOut } from "firebase/auth";
 import { auth } from "../firebase";
 
 const AuthContext = createContext();
+
+const IDLE_TIMEOUT = 30 * 60 * 1000;
+const IDLE_EVENTS = [
+  "mousemove",
+  "mousedown",
+  "keydown",
+  "touchstart",
+  "scroll",
+  "click",
+];
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [token, setToken] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const idleTimer = useRef(null);
 
-  // Initialize auth from localStorage and Firebase
+  const logout = () => {
+    localStorage.removeItem("authToken");
+    localStorage.removeItem("user");
+    setToken(null);
+    setUser(null);
+    signOut(auth);
+  };
+
+  const resetIdleTimer = () => {
+    if (idleTimer.current) clearTimeout(idleTimer.current);
+    idleTimer.current = setTimeout(logout, IDLE_TIMEOUT);
+  };
+
   useEffect(() => {
-    // First, restore from localStorage if available
     const savedToken = localStorage.getItem("authToken");
     const savedUser = localStorage.getItem("user");
 
@@ -20,14 +48,11 @@ export const AuthProvider = ({ children }) => {
       setUser(JSON.parse(savedUser));
     }
 
-    // Then, listen to Firebase auth state changes
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
-        // User is logged in
         try {
           const idToken = await firebaseUser.getIdToken();
           setToken(idToken);
-          // Keep the user data from localStorage if it exists, otherwise use Firebase user
           const savedUser = localStorage.getItem("user");
           if (savedUser) {
             setUser(JSON.parse(savedUser));
@@ -41,7 +66,6 @@ export const AuthProvider = ({ children }) => {
           console.error("Error getting ID token:", error);
         }
       } else {
-        // User is logged out
         setToken(null);
         setUser(null);
       }
@@ -51,12 +75,21 @@ export const AuthProvider = ({ children }) => {
     return () => unsubscribe();
   }, []);
 
-  const logout = () => {
-    localStorage.removeItem("authToken");
-    localStorage.removeItem("user");
-    setToken(null);
-    setUser(null);
-  };
+  useEffect(() => {
+    if (!token) {
+      if (idleTimer.current) clearTimeout(idleTimer.current);
+      IDLE_EVENTS.forEach((e) => window.removeEventListener(e, resetIdleTimer));
+      return;
+    }
+
+    resetIdleTimer();
+    IDLE_EVENTS.forEach((e) => window.addEventListener(e, resetIdleTimer));
+
+    return () => {
+      if (idleTimer.current) clearTimeout(idleTimer.current);
+      IDLE_EVENTS.forEach((e) => window.removeEventListener(e, resetIdleTimer));
+    };
+  }, [token]);
 
   const isAuthenticated = !!token;
 

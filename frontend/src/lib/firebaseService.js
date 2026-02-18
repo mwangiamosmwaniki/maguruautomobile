@@ -12,12 +12,10 @@ import {
   Timestamp,
 } from "firebase/firestore";
 import { db } from "../firebase";
+import emailjs from "@emailjs/browser";
 
 // ─── CARS OPERATIONS ───────────────────────────────────
 
-/**
- * Fetch all cars from Firestore
- */
 export const fetchCars = async () => {
   try {
     const carsCollection = collection(db, "cars");
@@ -33,18 +31,12 @@ export const fetchCars = async () => {
   }
 };
 
-/**
- * Fetch a single car by ID
- */
 export const fetchCarById = async (carId) => {
   try {
     const carDoc = doc(db, "cars", carId);
     const snapshot = await getDoc(carDoc);
     if (snapshot.exists()) {
-      return {
-        id: snapshot.id,
-        ...snapshot.data(),
-      };
+      return { id: snapshot.id, ...snapshot.data() };
     }
     return null;
   } catch (error) {
@@ -53,9 +45,6 @@ export const fetchCarById = async (carId) => {
   }
 };
 
-/**
- * Create a new car
- */
 export const createCar = async (carData) => {
   try {
     const carsCollection = collection(db, "cars");
@@ -71,9 +60,6 @@ export const createCar = async (carData) => {
   }
 };
 
-/**
- * Update a car
- */
 export const updateCar = async (carId, carData) => {
   try {
     const carDoc = doc(db, "cars", carId);
@@ -87,9 +73,6 @@ export const updateCar = async (carId, carData) => {
   }
 };
 
-/**
- * Delete a car
- */
 export const deleteCar = async (carId) => {
   try {
     const carDoc = doc(db, "cars", carId);
@@ -100,9 +83,6 @@ export const deleteCar = async (carId) => {
   }
 };
 
-/**
- * Fetch cars by condition
- */
 export const fetchCarsByCondition = async (condition) => {
   try {
     const carsCollection = collection(db, "cars");
@@ -124,35 +104,16 @@ export const fetchCarsByCondition = async (condition) => {
 
 // ─── INQUIRIES OPERATIONS ──────────────────────────────
 
-/**
- * Create a new inquiry
- */
-export const createInquiry = async (inquiryData) => {
-  try {
-    const inquiriesCollection = collection(db, "inquiries");
-    const docRef = await addDoc(inquiriesCollection, {
-      ...inquiryData,
-      createdAt: Timestamp.now(),
-      status: "pending",
-    });
-    return docRef.id;
-  } catch (error) {
-    console.error("Error creating inquiry:", error);
-    throw error;
-  }
-};
-
-/**
- * Fetch all inquiries (admin only)
- */
 export const fetchInquiries = async () => {
   try {
     const inquiriesCollection = collection(db, "inquiries");
     const q = query(inquiriesCollection, orderBy("createdAt", "desc"));
     const snapshot = await getDocs(q);
-    return snapshot.docs.map((doc) => ({
-      id: doc.id,
-      ...doc.data(),
+    return snapshot.docs.map((document) => ({
+      id: document.id,
+      ...document.data(),
+      // Convert Firestore Timestamp → JS Date for timeAgo()
+      date: document.data().createdAt?.toDate?.() ?? new Date(),
     }));
   } catch (error) {
     console.error("Error fetching inquiries:", error);
@@ -160,9 +121,6 @@ export const fetchInquiries = async () => {
   }
 };
 
-/**
- * Update inquiry status
- */
 export const updateInquiryStatus = async (inquiryId, status) => {
   try {
     const inquiryDoc = doc(db, "inquiries", inquiryId);
@@ -171,14 +129,11 @@ export const updateInquiryStatus = async (inquiryId, status) => {
       updatedAt: Timestamp.now(),
     });
   } catch (error) {
-    console.error("Error updating inquiry:", error);
+    console.error("Error updating inquiry status:", error);
     throw error;
   }
 };
 
-/**
- * Delete an inquiry
- */
 export const deleteInquiry = async (inquiryId) => {
   try {
     const inquiryDoc = doc(db, "inquiries", inquiryId);
@@ -189,11 +144,69 @@ export const deleteInquiry = async (inquiryId) => {
   }
 };
 
+export const createInquiry = async (inquiryData) => {
+  try {
+    const inquiriesCollection = collection(db, "inquiries");
+    const docRef = await addDoc(inquiriesCollection, {
+      name: inquiryData.name,
+      email: inquiryData.email,
+      phone: inquiryData.phone,
+      message: inquiryData.message,
+      carId: inquiryData.carId,
+      carTitle: inquiryData.carTitle,
+      createdAt: Timestamp.now(),
+      status: "new",
+    });
+
+    emailjs.init(import.meta.env.VITE_EMAILJS_PUBLIC_KEY);
+
+    const adminEmailParams = {
+      carTitle: inquiryData.carTitle,
+      name: inquiryData.name,
+      email: inquiryData.email,
+      phone: inquiryData.phone,
+      message: inquiryData.message,
+      timestamp: new Date().toLocaleString("en-KE", {
+        timeZone: "Africa/Nairobi",
+      }),
+    };
+
+    try {
+      await emailjs.send(
+        import.meta.env.VITE_EMAILJS_SERVICE_ID,
+        import.meta.env.VITE_EMAILJS_ADMIN_TEMPLATE_ID,
+        adminEmailParams,
+      );
+    } catch (emailError) {
+      console.error("Failed to send admin email:", emailError);
+    }
+
+    const customerEmailParams = {
+      carTitle: inquiryData.carTitle,
+      name: inquiryData.name,
+      email: inquiryData.email,
+      message: inquiryData.message,
+    };
+
+    try {
+      await emailjs.send(
+        import.meta.env.VITE_EMAILJS_SERVICE_ID,
+        import.meta.env.VITE_EMAILJS_CUSTOMER_TEMPLATE_ID,
+        customerEmailParams,
+      );
+    } catch (emailError) {
+      console.error("Failed to send customer email:", emailError);
+    }
+
+    return docRef.id;
+  } catch (error) {
+    console.error("Error creating inquiry:", error);
+    throw error;
+  }
+};
+
 // ─── USERS OPERATIONS ──────────────────────────────────
 
-/**
- * Fetch all users (admin only)
- */
 export const fetchUsers = async () => {
   try {
     const usersCollection = collection(db, "users");
@@ -209,9 +222,6 @@ export const fetchUsers = async () => {
   }
 };
 
-/**
- * Create a new user (admin only)
- */
 export const createUser = async (userData) => {
   try {
     const usersCollection = collection(db, "users");
@@ -227,9 +237,6 @@ export const createUser = async (userData) => {
   }
 };
 
-/**
- * Update a user
- */
 export const updateUser = async (userId, userData) => {
   try {
     const userDoc = doc(db, "users", userId);
@@ -243,9 +250,6 @@ export const updateUser = async (userId, userData) => {
   }
 };
 
-/**
- * Delete a user
- */
 export const deleteUser = async (userId) => {
   try {
     const userDoc = doc(db, "users", userId);
@@ -258,9 +262,6 @@ export const deleteUser = async (userId) => {
 
 // ─── STATISTICS OPERATIONS ────────────────────────────
 
-/**
- * Fetch dashboard statistics
- */
 export const fetchDashboardStats = async () => {
   try {
     const carsCollection = collection(db, "cars");
@@ -277,7 +278,7 @@ export const fetchDashboardStats = async () => {
     ).length;
     const soldCars = cars.filter((car) => car.status === "Sold").length;
     const pendingInquiries = inquiries.filter(
-      (inq) => inq.status === "pending",
+      (inq) => inq.status === "new",
     ).length;
 
     return {
@@ -293,18 +294,12 @@ export const fetchDashboardStats = async () => {
   }
 };
 
-/**
- * Fetch a single user by ID
- */
 export const fetchUserFromFirebase = async (userId) => {
   try {
     const userDoc = doc(db, "users", userId);
     const snapshot = await getDoc(userDoc);
     if (snapshot.exists()) {
-      return {
-        id: snapshot.id,
-        ...snapshot.data(),
-      };
+      return { id: snapshot.id, ...snapshot.data() };
     }
     return null;
   } catch (error) {
