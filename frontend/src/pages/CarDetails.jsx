@@ -34,6 +34,8 @@ import { motion } from "framer-motion";
 import { toast } from "sonner";
 import { fetchCarById, createInquiry } from "../lib/firebaseService";
 
+const DEALER_PHONE = import.meta.env.VITE_DEALER_PHONE;
+
 export default function CarDetails() {
   const { id: carId } = useParams();
 
@@ -50,6 +52,9 @@ export default function CarDetails() {
     message: "",
   });
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const callPhone = car?.phone_number || car?.contact_phone || DEALER_PHONE;
 
   // Fetch car data
   useEffect(() => {
@@ -80,14 +85,13 @@ export default function CarDetails() {
   const handleInquirySubmit = async (e) => {
     e.preventDefault();
 
-    // Validate required fields
     if (!inquiry.name || !inquiry.email || !inquiry.phone || !inquiry.message) {
       toast.error("Please fill in all fields");
       return;
     }
 
+    setIsSubmitting(true);
     try {
-      // Save inquiry to Firestore - Cloud Function will send email automatically
       await createInquiry({
         name: inquiry.name,
         email: inquiry.email,
@@ -104,6 +108,8 @@ export default function CarDetails() {
     } catch (error) {
       console.error("Error submitting inquiry:", error);
       toast.error("Failed to send inquiry. Please try again.");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -123,7 +129,6 @@ export default function CarDetails() {
   if (!carId) {
     return (
       <div className="relative flex flex-col items-center justify-center min-h-screen overflow-hidden bg-black">
-        {/* Background Effects */}
         <div className="absolute inset-0 bg-black" />
         <div className="absolute top-1/2 left-1/2 w-[600px] h-[600px] bg-gradient-radial from-rose-500/20 to-transparent rounded-full blur-3xl transform -translate-x-1/2 -translate-y-1/2 animate-pulse" />
 
@@ -199,7 +204,6 @@ export default function CarDetails() {
     );
   }
 
-  // Car specifications
   const specs = [
     { icon: Calendar, label: "Year", value: car.year },
     {
@@ -213,7 +217,6 @@ export default function CarDetails() {
     { icon: Palette, label: "Color", value: car.color },
   ];
 
-  // Get all available images from the API
   const carImages =
     car.images && car.images.length > 0
       ? car.images
@@ -437,21 +440,34 @@ export default function CarDetails() {
                     </div>
                     <Button
                       type="submit"
-                      className="w-full py-6 text-base font-semibold bg-gradient-to-r from-rose-500 to-orange-500 hover:from-rose-600 hover:to-orange-600 rounded-xl"
+                      disabled={isSubmitting}
+                      className="w-full py-6 text-base font-semibold bg-gradient-to-r from-rose-500 to-orange-500 hover:from-rose-600 hover:to-orange-600 rounded-xl disabled:opacity-70 disabled:cursor-not-allowed"
                     >
-                      Send Inquiry
+                      {isSubmitting ? (
+                        <>
+                          <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                          Sending...
+                        </>
+                      ) : (
+                        <>
+                          <MessageCircle className="w-5 h-5 mr-2" />
+                          Send Inquiry
+                        </>
+                      )}
                     </Button>
                   </form>
                 </DialogContent>
               </Dialog>
 
-              <Button
-                variant="outline"
-                className="w-full py-6 text-base font-medium text-gray-300 transition-all duration-300 border-gray-700 rounded-2xl bg-black/50 hover:bg-gray-800/50 hover:text-white hover:border-gray-600"
-              >
-                <Phone className="w-5 h-5 mr-2" />
-                Call Now
-              </Button>
+              <a href={`tel:${callPhone}`} className="w-full">
+                <Button
+                  variant="outline"
+                  className="w-full py-6 text-base font-medium text-gray-300 transition-all duration-300 border-gray-700 rounded-2xl bg-black/50 hover:bg-gray-800/50 hover:text-white hover:border-gray-600"
+                >
+                  <Phone className="w-5 h-5 mr-2" />
+                  Call Now
+                </Button>
+              </a>
             </div>
           </motion.div>
         </div>
