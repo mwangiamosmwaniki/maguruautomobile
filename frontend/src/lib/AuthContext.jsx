@@ -5,8 +5,7 @@ import React, {
   useRef,
   useContext,
 } from "react";
-import { onAuthStateChanged, signOut } from "firebase/auth";
-import { auth } from "../firebase";
+import { getCurrentUser, logout as apiLogout } from "./apiService";
 
 const AuthContext = createContext();
 
@@ -31,7 +30,7 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem("user");
     setToken(null);
     setUser(null);
-    signOut(auth);
+    apiLogout().catch(() => {});
   };
 
   const resetIdleTimer = () => {
@@ -48,31 +47,25 @@ export const AuthProvider = ({ children }) => {
       setUser(JSON.parse(savedUser));
     }
 
-    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
-      if (firebaseUser) {
-        try {
-          const idToken = await firebaseUser.getIdToken();
-          setToken(idToken);
-          const savedUser = localStorage.getItem("user");
-          if (savedUser) {
-            setUser(JSON.parse(savedUser));
-          } else {
-            setUser({
-              uid: firebaseUser.uid,
-              email: firebaseUser.email,
-            });
-          }
-        } catch (error) {
-          console.error("Error getting ID token:", error);
-        }
-      } else {
+    if (!savedToken) {
+      setIsLoading(false);
+      return undefined;
+    }
+
+    getCurrentUser()
+      .then(({ user: currentUser }) => {
+        setUser(currentUser);
+        setToken(savedToken);
+      })
+      .catch(() => {
+        localStorage.removeItem("authToken");
+        localStorage.removeItem("user");
         setToken(null);
         setUser(null);
-      }
-      setIsLoading(false);
-    });
+      })
+      .finally(() => setIsLoading(false));
 
-    return () => unsubscribe();
+    return undefined;
   }, []);
 
   useEffect(() => {

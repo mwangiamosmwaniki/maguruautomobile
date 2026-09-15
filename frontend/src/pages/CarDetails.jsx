@@ -32,7 +32,7 @@ import { Link } from "react-router-dom";
 import { createPageUrl } from "../lib/utils";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
-import { fetchCarById, createInquiry } from "../lib/firebaseService";
+import { fetchCarById, createInquiry } from "../lib/apiService";
 
 const DEALER_PHONE = import.meta.env.VITE_DEALER_PHONE;
 

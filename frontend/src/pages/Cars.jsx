@@ -13,7 +13,7 @@ import { Tabs, TabsList, TabsTrigger } from "../assets/components/ui/tabs";
 import CarCard from "../assets/components/cars/CarCard";
 import CarFilters from "../assets/components/cars/CarFilters";
 import { motion } from "framer-motion";
-import { fetchCars as fetchCarsFromFirebase } from "../lib/firebaseService";
+import { fetchCars } from "../lib/apiService";
 
 export default function Cars() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -28,12 +28,12 @@ export default function Cars() {
 
   const allowedConditions = ["Foreign Used", "Locally Used"];
 
-  // Fetch cars data from Firebase
+  // Fetch cars data from the API.
   useEffect(() => {
     const fetchCars = async () => {
       setIsLoading(true);
       try {
-        const data = await fetchCarsFromFirebase();
+        const data = await fetchCars();
         setCars(Array.isArray(data) ? data : []);
 
         // Extract unique conditions from database and filter to allowed ones

@@ -3,11 +3,11 @@ import { Plus, Trash2, Edit2, X, Check, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "../../lib/AuthContext";
 import {
-  fetchUsers as fetchUsersFromFirebase,
-  createUser as createUserFirebase,
-  updateUser as updateUserFirebase,
-  deleteUser as deleteUserFirebase,
-} from "../../lib/firebaseService";
+  fetchUsers as fetchUsersFromApi,
+  createUser,
+  updateUser,
+  deleteUser,
+} from "../../lib/apiService";
 
 const css = `
   .usr-delete-overlay {
@@ -148,7 +148,7 @@ const UsersPage = () => {
   const fetchUsers = async () => {
     try {
       setLoading(true);
-      const data = await fetchUsersFromFirebase();
+      const data = await fetchUsersFromApi();
       setUsers(data || []);
     } catch (err) {
       console.error("Error fetching users:", err);
@@ -178,10 +178,10 @@ const UsersPage = () => {
       if (!payload.password) delete payload.password;
 
       if (editingId) {
-        await updateUserFirebase(editingId, payload);
+        await updateUser(editingId, payload);
         toast.success("User updated");
       } else {
-        await createUserFirebase(payload);
+        await createUser(payload);
         toast.success("User created");
       }
       setFormData({ name: "", email: "", password: "" });
@@ -205,7 +205,7 @@ const UsersPage = () => {
   const handleDelete = async () => {
     if (!confirmDeleteId) return;
     try {
-      await deleteUserFirebase(confirmDeleteId);
+      await deleteUser(confirmDeleteId);
       toast.success("User deleted");
       setConfirmDeleteId(null);
       fetchUsers();

@@ -19,7 +19,7 @@ export default function CarCard({ car, index = 0 }) {
     return new Intl.NumberFormat("en-KE").format(mileage) + " km";
   };
 
-  // Get the first image from Firebase/Cloudinary, fallback to image_url
+  // Get the first stored image, with a fallback for older records.
   const imageUrl =
     car.images && car.images.length > 0 ? car.images[0] : car.image_url;
 

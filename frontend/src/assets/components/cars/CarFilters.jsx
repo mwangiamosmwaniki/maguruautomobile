@@ -17,7 +17,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "../ui/sheet";
-import { fetchCars as fetchCarsFromFirebase } from "../../../lib/firebaseService";
+import { fetchCars } from "../../../lib/apiService";
 
 export default function CarFilters({
   filters,
@@ -32,11 +32,11 @@ export default function CarFilters({
   const [conditions, setConditions] = useState([]);
   const [priceRanges, setPriceRanges] = useState([]);
 
-  // Fetch unique filter values from Firebase
+  // Fetch unique filter values from the API.
   useEffect(() => {
     const fetchFilters = async () => {
       try {
-        const data = await fetchCarsFromFirebase();
+        const data = await fetchCars();
         if (!Array.isArray(data) || data.length === 0) {
           console.warn("No car data available");
           return;

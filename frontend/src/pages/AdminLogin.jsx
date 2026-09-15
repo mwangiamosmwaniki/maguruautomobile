@@ -4,9 +4,7 @@ import { Lock, Mail, AlertCircle, Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
 import { useAuth } from "../lib/AuthContext";
-import { signInWithEmailAndPassword } from "firebase/auth";
-import { auth } from "../firebase";
-import { fetchUserFromFirebase } from "../lib/firebaseService";
+import { login } from "../lib/apiService";
 
 export default function AdminLogin() {
   const navigate = useNavigate();
@@ -33,22 +31,10 @@ export default function AdminLogin() {
     setError(null);
 
     try {
-      // Sign in with Firebase Authentication
-      const userCredential = await signInWithEmailAndPassword(
-        auth,
+      const { token, user: userData } = await login(
         formData.email,
         formData.password,
       );
-
-      // Get the token
-      const token = await userCredential.user.getIdToken();
-
-      // Fetch user data from Firestore
-      const userData = await fetchUserFromFirebase(userCredential.user.uid);
-
-      if (!userData) {
-        throw new Error("User not found in database");
-      }
 
       // Store token and user in localStorage
       localStorage.setItem("authToken", token);
@@ -64,10 +50,7 @@ export default function AdminLogin() {
       const from = location.state?.from?.pathname || "/admin/dashboard";
       navigate(from);
     } catch (err) {
-      const errorMsg =
-        err.code === "auth/invalid-credential"
-          ? "Invalid email or password"
-          : err.message || "Login failed";
+      const errorMsg = err.message || "Login failed";
       setError(errorMsg);
       toast.error(errorMsg);
     } finally {

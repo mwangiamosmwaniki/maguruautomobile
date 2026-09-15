@@ -4,16 +4,16 @@ import { useAuth } from "../../lib/AuthContext";
 import UsersPage from "./Users";
 import Logo from "../../assets/images/maguruLogo.png";
 import {
-  fetchCars as fetchCarsFromFirebase,
-  createCar as createCarFirebase,
-  updateCar as updateCarFirebase,
-  deleteCar as deleteCarFirebase,
+  fetchCars as fetchCarsFromApi,
+  createCar,
+  updateCar,
+  deleteCar,
   fetchDashboardStats,
-  fetchInquiries as fetchInquiriesFromFirebase,
-  updateInquiryStatus as updateInquiryStatusFirebase,
-  deleteInquiry as deleteInquiryFirebase,
-} from "../../lib/firebaseService";
-import { uploadMultipleToCloudinary } from "../../lib/cloudinaryService";
+  fetchInquiries as fetchInquiriesFromApi,
+  updateInquiryStatus,
+  deleteInquiry,
+  uploadMultipleToR2,
+} from "../../lib/apiService";
 
 const MAKES = [
   "Toyota",
@@ -884,7 +884,7 @@ export default function MaguruAutoDashboard() {
   const fetchCars = useCallback(async () => {
     setLoading(true);
     try {
-      const data = await fetchCarsFromFirebase();
+      const data = await fetchCarsFromApi();
       setCars(Array.isArray(data) ? data : data.data || []);
     } catch (error) {
       console.error("Failed to fetch cars:", error);
@@ -897,7 +897,7 @@ export default function MaguruAutoDashboard() {
   const fetchInquiries = useCallback(async () => {
     setInqLoading(true);
     try {
-      const data = await fetchInquiriesFromFirebase();
+      const data = await fetchInquiriesFromApi();
       setInquiries(data);
     } catch (error) {
       console.error("Failed to fetch inquiries:", error);
@@ -991,9 +991,9 @@ export default function MaguruAutoDashboard() {
     };
     try {
       if (view === "edit") {
-        await updateCarFirebase(form.id, payload);
+        await updateCar(form.id, payload);
       } else {
-        await createCarFirebase(payload);
+        await createCar(payload);
       }
       await fetchCars();
       showToast(
@@ -1019,16 +1019,13 @@ export default function MaguruAutoDashboard() {
       return;
     }
     try {
-      showToast("Uploading images to Cloudinary...", "loading");
-      const urls = await uploadMultipleToCloudinary(
-        newImages,
-        "maguruauto/cars",
-      );
+      showToast("Uploading images to storage...", "loading");
+      const urls = await uploadMultipleToR2(newImages);
       setImgPreviews((prev) => [...prev, ...urls]);
       showToast(`Successfully uploaded ${newImages.length} images`, "success");
     } catch (error) {
       showToast(
-        error.message || "Failed to upload images to Cloudinary",
+        error.message || "Failed to upload images to storage",
         "error",
       );
     }
@@ -1039,7 +1036,7 @@ export default function MaguruAutoDashboard() {
 
   const deleteCar = async (id) => {
     try {
-      await deleteCarFirebase(id);
+      await deleteCar(id);
       await fetchCars();
       setConfirmDelete(null);
       if (view === "detail") setView("list");
@@ -1121,7 +1118,7 @@ export default function MaguruAutoDashboard() {
 
   const updateInqStatus = async (id, newStatus) => {
     try {
-      await updateInquiryStatusFirebase(id, newStatus);
+      await updateInquiryStatus(id, newStatus);
       setInquiries((prev) =>
         prev.map((inq) =>
           inq.id === id ? { ...inq, status: newStatus } : inq,
@@ -1135,7 +1132,7 @@ export default function MaguruAutoDashboard() {
 
   const deleteInquiry = async (id) => {
     try {
-      await deleteInquiryFirebase(id);
+      await deleteInquiry(id);
       setInquiries((prev) => prev.filter((inq) => inq.id !== id));
       if (expandedInq === id) setExpandedInq(null);
       showToast("Inquiry deleted");
